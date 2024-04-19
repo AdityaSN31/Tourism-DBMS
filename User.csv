@@ -1,5 +1,6 @@
-User Name,Password,Role
-Neer,123,admin
-Aditya,123,admin
-Raj,123,admin
-Fourth,123,User
+username,password,role
+aditya,123,admin
+raj,123,admin
+neer,123,admin
+janhvi,456,user
+
