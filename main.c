@@ -65,6 +65,56 @@ typedef struct {
     float costPerNight;
 } Hotel;
 
+
+/*
+clearInputBuffer(): This function clears the input buffer by reading characters until encountering a newline or EOF.
+error(const char *message): It prints an error message to the standard error stream and exits the program with a failure status.
+validateName(const char *name): This function validates a name string to ensure it's not empty and doesn't exceed the maximum length.
+validateEmail(const char *email): It validates an email string, checking if it's not empty, doesn't exceed the maximum length, contains the '@' symbol, and has at least one dot '.' after the '@' symbol.
+validateMobile(const char *mobile): This function validates a mobile number string to ensure it's not empty and doesn't exceed the maximum length.
+validateDate(const char *date): It validates a date string to ensure it's not empty and doesn't exceed the maximum length.
+generateSalt(char *salt): This function generates a random salt of a specified size.
+computeHash(const char *password, const char *salt, char *hash): It computes the hash of a password concatenated with a salt using the SHA-512 hashing algorithm.
+authenticateUser(const char *username, const char *password): This function performs user authentication by comparing the computed hash of the provided password with the stored hash associated with the username.
+
+addTourist(User *user): Prompts the user to input tourist details (name, email, mobile number) and sets the user's role as "USER".
+deleteTourist(User *user): Prints a message indicating the successful deletion of a tourist. Since the data is not persisted beyond program execution, no further action is taken.
+addTouristFromFile(User *user): Adds a tourist's details to a CSV file, including name, email, mobile number, and role.
+deleteTouristFromFile(User *user): Deletes a tourist's details from the CSV file based on the provided user data.
+
+addDestination(Destination destinations[], int *numDestinations): Allows the user to add a new destination to an array of destinations, including details like name, description, location, and best time to visit.
+deleteDestination(Destination destinations[], int *numDestinations): Deletes a destination from the array of destinations based on the user's input index.
+addDestinationFromUser(Destination *destination): Prompts the user to input destination details and saves them to a CSV file.
+deleteDestinationFromUser(Destination *destination): Deletes a destination from the CSV file based on the provided destination data.
+addDestinationFromFile(Destination destinations[], int *numDestinations): Reads destination data from a CSV file and populates an array of destinations.
+deleteDestinationFromFile(const char *destinationName): Deletes a destination from the CSV file based on the provided destination name.
+viewDestinationsFromFile(): Displays all destinations stored in the CSV file, including their details like name, description, location, places to visit, and best time to visit.
+
+addPackage(Package packages[], int *numPackages): Allows the user to input details for a new package, including name, region, duration, description, itinerary, price, and destinations. The package is added to an array of packages.
+deletePackage(Package packages[], int *numPackages): Deletes a package from the array of packages based on the user's input index.
+addPackageFromFile(Package packages[], int *numPackages): Prompts the user to input package details and saves them to a CSV file. Destinations associated with the package are also saved.
+deletePackageFromFile(int index): Deletes a package from the CSV file based on the provided index.
+viewPackagesFromFile(Package packages[], int numPackages): Reads package data from a CSV file and displays it to the user, including details such as name, region, duration, description, itinerary, price, and associated destinations.
+savePackagesToFile(Package packages[], int numPackages): Saves package data from an array of packages to a CSV file, including details and associated destinations.
+loadPackagesFromFile(Package packages[], int *numPackages): Loads package data from a CSV file into an array of packages.
+
+addFlight(Flight flights[], int *numFlights): Allows the user to input details for a new flight, including airline, flight number, departure, arrival, departure time, arrival time, and cost. The flight is then added to an array of flights.
+deleteFlight(Flight flights[], int *numFlights): Deletes a flight from the array of flights based on the user's input index.
+addFlightToFile(Flight *flight): Prompts the user to input flight details and saves them to a CSV file.
+deleteFlightFromFile(Flight *flight): Deletes a flight from the CSV file based on the provided flight details.
+saveFlightsToFile(Flight flights[], int numFlights): Saves flight data from an array of flights to a CSV file.
+viewFlightsFromFile(Flight flights[], int numFlights): Reads flight data from a CSV file and displays it to the user.
+loadFlightsFromFile(Flight flights[], int *numFlights): Loads flight data from a CSV file into an array of flights.
+
+addHotel(Hotel hotels[], int *numHotels): Allows the user to input details for a new hotel, including name, location, check-in date, check-out date, number of nights, and cost per night. The hotel is then added to an array of hotels.
+deleteHotel(Hotel hotels[], int *numHotels): Deletes a hotel from the array of hotels based on the user's input index.
+addHotelToFile(Hotel *hotel): Prompts the user to input hotel details and saves them to a CSV file.
+deleteHotelFromFile(Hotel *hotel): Deletes a hotel from the CSV file based on the provided hotel details.
+saveHotelToFile(Hotel hotels[], int numHotels): Saves hotel data from an array of hotels to a CSV file.
+viewHotelFromFile(Hotel hotels[], int numHotels): Reads hotel data from a CSV file and displays it to the user.
+loadHotelFromFile(Hotel hotels[], int *numHotels): Loads hotel data from a CSV file into an array of hotels.
+*/
+
 // Function to clear the input buffer
 void clearInputBuffer() {
     int c;
@@ -769,8 +819,7 @@ void deleteFlight(Flight flights[], int *numFlights) {
     }
 }
 
-
-// Function to add a new flight (for admin)
+// Function to add a new flight (for admin) to a CSV file
 void addFlightToFile(Flight *flight) {
     printf("Enter airline: ");
     fgets(flight->airline, sizeof(flight->airline), stdin);
@@ -794,28 +843,28 @@ void addFlightToFile(Flight *flight) {
     scanf("%f", &flight->cost);
     clearInputBuffer();
 
-    FILE *file = fopen("flights.txt", "a");
+    FILE *file = fopen("flights.csv", "a");
     if (file == NULL) {
         error("Unable to open file for writing");
     }
-    fprintf(file, "%s %s %s %s %s %s %.2f\n", flight->airline, flight->flightNumber, flight->departure,
+    fprintf(file, "%s,%s,%s,%s,%s,%s,%.2f\n", flight->airline, flight->flightNumber, flight->departure,
             flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
     fclose(file);
 }
 
-// Function to delete a flight
+// Function to delete a flight from a CSV file
 void deleteFlightFromFile(Flight *flight) {
     printf("Flight %s %s deleted successfully.\n", flight->airline, flight->flightNumber);
 
-    FILE *file = fopen("flights.txt", "r");
-    FILE *tempFile = fopen("temp_flights.txt", "w");
+    FILE *file = fopen("flights.csv", "r");
+    FILE *tempFile = fopen("temp_flights.csv", "w");
     if (file == NULL || tempFile == NULL) {
         error("Unable to open files for deletion");
     }
 
     char line[MAX_NAME_LENGTH + MAX_NAME_LENGTH + MAX_LOCATION_LENGTH * 2 + MAX_DATE_LENGTH * 2 + 20];
     char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s %s %s %s %s %s %.2f", flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
+    sprintf(nameToDelete, "%s,%s,%s,%s,%s,%s,%.2f", flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
 
     while (fgets(line, sizeof(line), file)) {
         if (strstr(line, nameToDelete) == NULL) {
@@ -826,8 +875,103 @@ void deleteFlightFromFile(Flight *flight) {
     fclose(file);
     fclose(tempFile);
 
-    remove("flights.txt");
-    rename("temp_flights.txt", "flights.txt");
+    remove("flights.csv");
+    rename("temp_flights.csv", "flights.csv");
+}
+
+
+// Function to save flights to a CSV file
+void saveFlightsToFile(Flight flights[], int numFlights) {
+    FILE *file = fopen("flights.csv", "w");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < numFlights; i++) {
+        fprintf(file, "%s,%s,%s,%s,%s,%s,%.2f\n", flights[i].airline, flights[i].flightNumber,
+                flights[i].departure, flights[i].arrival, flights[i].departureTime,
+                flights[i].arrivalTime, flights[i].cost);
+    }
+
+    fclose(file);
+}
+
+// Function to view flights from a CSV file
+void viewFlightsFromFile(Flight flights[], int numFlights) {
+    FILE *file = fopen("flights.csv", "r");
+    if (file == NULL) {
+        printf("No flights found in the database.\n");
+        return;
+    }
+
+    char line[MAX_CSV_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        char *token;
+        int i = 0;
+
+        token = strtok(line, ",");
+        strcpy(flights[numFlights].airline, token);
+
+        token = strtok(NULL, ",");
+        strcpy(flights[numFlights].flightNumber, token);
+
+        token = strtok(NULL, ",");
+        strcpy(flights[numFlights].departure, token);
+
+        token = strtok(NULL, ",");
+        strcpy(flights[numFlights].arrival, token);
+
+        token = strtok(NULL, ",");
+        strcpy(flights[numFlights].departureTime, token);
+
+        token = strtok(NULL, ",");
+        strcpy(flights[numFlights].arrivalTime, token);
+
+        token = strtok(NULL, ",");
+        flights[numFlights].cost = atof(token);
+
+        numFlights++;
+    }
+
+    fclose(file);
+
+    if (numFlights > 0) {
+        printf("List of Flights:\n");
+        for (int i = 0; i < numFlights; i++) {
+            printf("\nFlight %d:\n", i + 1);
+            printf("Airline: %s\n", flights[i].airline);
+            printf("Flight Number: %s\n", flights[i].flightNumber);
+            printf("Departure: %s\n", flights[i].departure);
+            printf("Arrival: %s\n", flights[i].arrival);
+            printf("Departure Time: %s\n", flights[i].departureTime);
+            printf("Arrival Time: %s\n", flights[i].arrivalTime);
+            printf("Cost: %.2f\n", flights[i].cost);
+        }
+    } else {
+        printf("No flights to display.\n");
+    }
+}
+
+// Function to load flights from a CSV file
+void loadFlightsFromFile(Flight flights[], int *numFlights) {
+    FILE *file = fopen("flights.csv", "r");
+    if (file == NULL) {
+        printf("No flights found in the database.\n");
+        return;
+    }
+
+    while (!feof(file)) {
+        fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%f\n",
+               flights[*numFlights].airline, flights[*numFlights].flightNumber,
+               flights[*numFlights].departure, flights[*numFlights].arrival,
+               flights[*numFlights].departureTime, flights[*numFlights].arrivalTime,
+               &flights[*numFlights].cost);
+
+        (*numFlights)++;
+    }
+
+    fclose(file);
 }
 
 void addHotel(Hotel hotels[], int *numHotels) {
@@ -902,11 +1046,11 @@ void addHotelToFile(Hotel *hotel) {
     scanf("%f", &hotel->costPerNight);
     clearInputBuffer();
 
-    FILE *file = fopen("hotels.txt", "a");
+    FILE *file = fopen("hotels.csv", "a");
     if (file == NULL) {
         error("Unable to open file for writing");
     }
-    fprintf(file, "%s %s %s %s %d %.2f\n", hotel->name, hotel->location, hotel->checkInDate,
+    fprintf(file, "%s,%s,%s,%s,%d,%.2f\n", hotel->name, hotel->location, hotel->checkInDate,
             hotel->checkOutDate, hotel->numNights, hotel->costPerNight);
     fclose(file);
 }
@@ -915,15 +1059,15 @@ void addHotelToFile(Hotel *hotel) {
 void deleteHotelFromFile(Hotel *hotel) {
     printf("Hotel %s deleted successfully.\n", hotel->name);
 
-    FILE *file = fopen("hotels.txt", "r");
-    FILE *tempFile = fopen("temp_hotels.txt", "w");
+    FILE *file = fopen("hotels.csv", "r");
+    FILE *tempFile = fopen("temp_hotels.csv", "w");
     if (file == NULL || tempFile == NULL) {
         error("Unable to open files for deletion");
     }
 
     char line[MAX_NAME_LENGTH + MAX_LOCATION_LENGTH + MAX_DATE_LENGTH * 2 + 15];
     char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s %s %s %s %d %.2f", hotel->name, hotel->location, hotel->checkInDate, hotel->checkOutDate, hotel->numNights, hotel->costPerNight);
+    sprintf(nameToDelete, "%s,%s,%s,%s,%d,%.2f", hotel->name, hotel->location, hotel->checkInDate, hotel->checkOutDate, hotel->numNights, hotel->costPerNight);
 
     while (fgets(line, sizeof(line), file)) {
         if (strstr(line, nameToDelete) == NULL) {
@@ -934,27 +1078,64 @@ void deleteHotelFromFile(Hotel *hotel) {
     fclose(file);
     fclose(tempFile);
 
-    remove("hotels.txt");
-    rename("temp_hotels.txt", "hotels.txt");
+    remove("hotels.csv");
+    rename("temp_hotels.csv", "hotels.csv");
 }
 
-// Function to read data from file and display destinations
-void displayDestinationsFromFile() {
-    FILE *file = fopen("destinations.txt", "r");
+
+// Function to save hotels to a CSV file
+void saveHotelToFile(Hotel hotels[], int numHotels) {
+    FILE *file = fopen("hotels.csv", "w");
     if (file == NULL) {
-        error("Unable to open destinations file");
+        error("Error opening file for writing");
     }
 
-    Destination destination;
-    while (fscanf(file, "%s %s %s %s", destination.name, destination.description,
-                  destination.location, destination.bestTimeToVisit) != EOF) {
-        printf("Destination Name: %s\n", destination.name);
-        printf("Description: %s\n", destination.description);
-        printf("Location: %s\n", destination.location);
-        printf("Best Time to Visit: %s\n", destination.bestTimeToVisit);
+    for (int i = 0; i < numHotels; i++) {
+        fprintf(file, "%s,%s,%s,%s,%d,%.2f\n", hotels[i].name, hotels[i].location,
+                hotels[i].checkInDate, hotels[i].checkOutDate, hotels[i].numNights, hotels[i].costPerNight);
     }
+
     fclose(file);
 }
+
+// Function to view hotels from a CSV file
+void viewHotelFromFile(Hotel hotels[], int numHotels) {
+    FILE *file = fopen("hotels.csv", "r");
+    if (file == NULL) {
+        error("No hotels found in the database");
+        return;
+    }
+
+    printf("List of Hotels:\n");
+    printf("%-20s%-20s%-15s%-15s%-10s%-10s\n", "Name", "Location", "Check-in Date", "Check-out Date", "Nights", "Cost/Night");
+    printf("-----------------------------------------------------------------\n");
+    while (fscanf(file, "%[^,],%[^,],%[^,],%[^,],%d,%f\n", hotels[numHotels].name, hotels[numHotels].location,
+                  hotels[numHotels].checkInDate, hotels[numHotels].checkOutDate, &hotels[numHotels].numNights, &hotels[numHotels].costPerNight) != EOF) {
+        printf("%-20s%-20s%-15s%-15s%-10d%-10.2f\n", hotels[numHotels].name, hotels[numHotels].location,
+               hotels[numHotels].checkInDate, hotels[numHotels].checkOutDate, hotels[numHotels].numNights, hotels[numHotels].costPerNight);
+        numHotels++;
+    }
+
+    fclose(file);
+}
+
+// Function to load hotels from a CSV file
+void loadHotelFromFile(Hotel hotels[], int *numHotels) {
+    FILE *file = fopen("hotels.csv", "r");
+    if (file == NULL) {
+        error("No hotels found in the database");
+        return;
+    }
+
+    while (fscanf(file, "%[^,],%[^,],%[^,],%[^,],%d,%f\n", hotels[*numHotels].name, hotels[*numHotels].location,
+                  hotels[*numHotels].checkInDate, hotels[*numHotels].checkOutDate, &hotels[*numHotels].numNights, &hotels[*numHotels].costPerNight) != EOF) {
+        (*numHotels)++;
+    }
+
+    fclose(file);
+}
+
+
 
 int main() {
     UserRole role = authenticateUser();
