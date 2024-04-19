@@ -1138,28 +1138,377 @@ void loadHotelFromFile(Hotel hotels[], int *numHotels) {
 
 
 int main() {
-    UserRole role = authenticateUser();
+    // Initialize variables
+    int choice;
+    char username[MAX_NAME_LENGTH];
+    char password[MAX_NAME_LENGTH];
+    UserRole role;
 
-    if (role == ADMIN) {
-        printf("Welcome, Admin!\n");
+    // Authenticate user
+    printf("Welcome to the Travel Management System\n");
+    printf("Please login to continue.\n");
+    printf("Username: ");
+    fgets(username, sizeof(username), stdin);
+    username[strcspn(username, "\n")] = '\0'; // Remove trailing newline
+    printf("Password: ");
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = '\0'; // Remove trailing newline
 
-        // Admin functionalities
-        Destination destination;
-        addDestination(&destination);
-
-        Flight flight;
-        addFlight(&flight);
-
-        Hotel hotel;
-        addHotel(&hotel);
-
-        User user;
-        addTourist(&user);
+    // Authenticate user based on username and password
+    if (authenticateUser(username, password)) {
+        // If authentication successful, assign role
+        if (strcmp(username, "admin") == 0) {
+            role = ADMIN;
+            printf("Welcome Admin!\n");
+        } else {
+            role = USER;
+            printf("Welcome User!\n");
+        }
     } else {
-        printf("Welcome, User!\n");
+        printf("Authentication failed. Exiting...\n");
+        exit(1);
+    }
 
-        // User functionalities
-        displayDestinationsFromFile();
+    // User Interface
+    while (1) {
+        // Display options based on role
+        if (role == ADMIN) {
+            printf("\nAdmin Menu:\n");
+            printf("1. Manage Flights\n");
+            printf("2. Manage Hotels\n");
+            printf("3. Manage Packages\n");
+            printf("4. Manage Destinations\n");
+            printf("5. Exit\n");
+        } else if (role == USER) {
+            printf("\nUser Menu:\n");
+            printf("1. View Flights\n");
+            printf("2. View Hotels\n");
+            printf("3. View Packages\n");
+            printf("4. View Destinations\n");
+            printf("5. Book Flight/Hotel/Package\n");
+            printf("6. Provide Feedback\n");
+            printf("7. Exit\n");
+        }
+
+        // Get user choice
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // Consume newline character
+
+        // Perform actions based on choice
+        switch (choice) {
+            case 1:
+                if (role == ADMIN) {
+                    int adminChoice;
+                    printf("\nAdmin Flight Management Menu:\n");
+                    printf("1. Add Flight\n");
+                    printf("2. Delete Flight\n");
+                    printf("3. View Flights\n");
+                    printf("4. Exit\n");
+            
+                    // Get admin's choice for flight management
+                    printf("Enter your choice: ");
+                    scanf("%d", &adminChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (adminChoice) {
+                        case 1:
+                            // Add new flight
+                            addFlight(flights, &numFlights);
+                            saveFlightsToFile(flights, numFlights); // Save flights to file after addition
+                            break;
+                        case 2:
+                            // Delete flight
+                            deleteFlight(flights, &numFlights);
+                            saveFlightsToFile(flights, numFlights); // Save flights to file after deletion
+                            break;
+                        case 3:
+                            // View flights
+                            viewFlightsFromFile(flights, numFlights);
+                            break;
+                        case 4:
+                            printf("Exiting Admin Flight Management...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                } else if (role == USER) {
+                    printf("\nView Flights Menu:\n");
+                    printf("1. View All Flights\n");
+                    printf("2. Exit\n");
+            
+                    int userChoice;
+                    printf("Enter your choice: ");
+                    scanf("%d", &userChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userChoice) {
+                        case 1:
+                            // View all flights
+                            viewFlightsFromFile(flights, numFlights);
+                            break;
+                        case 2:
+                            printf("Exiting View Flights Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 2:
+                if (role == ADMIN) {
+                    int adminHotelChoice;
+                    printf("\nAdmin Hotel Management Menu:\n");
+                    printf("1. Add Hotel\n");
+                    printf("2. Delete Hotel\n");
+                    printf("3. View Hotels\n");
+                    printf("4. Exit\n");
+            
+                    // Get admin's choice for hotel management
+                    printf("Enter your choice: ");
+                    scanf("%d", &adminHotelChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (adminHotelChoice) {
+                        case 1:
+                            // Add new hotel
+                            addHotel(hotels, &numHotels);
+                            saveHotelToFile(hotels, numHotels); // Save hotels to file after addition
+                            break;
+                        case 2:
+                            // Delete hotel
+                            deleteHotel(hotels, &numHotels);
+                            saveHotelToFile(hotels, numHotels); // Save hotels to file after deletion
+                            break;
+                        case 3:
+                            // View hotels
+                            viewHotelFromFile(hotels, numHotels);
+                            break;
+                        case 4:
+                            printf("Exiting Admin Hotel Management...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                } else if (role == USER) {
+                    printf("\nView Hotels Menu:\n");
+                    printf("1. View All Hotels\n");
+                    printf("2. Exit\n");
+            
+                    int userHotelChoice;
+                    printf("Enter your choice: ");
+                    scanf("%d", &userHotelChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userHotelChoice) {
+                        case 1:
+                            // View all hotels
+                            viewHotelFromFile(hotels, numHotels);
+                            break;
+                        case 2:
+                            printf("Exiting View Hotels Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 3:
+                if (role == ADMIN) {
+                    int adminPackageChoice;
+                    printf("\nAdmin Package Management Menu:\n");
+                    printf("1. Add Package\n");
+                    printf("2. Delete Package\n");
+                    printf("3. View Packages\n");
+                    printf("4. Exit\n");
+            
+                    // Get admin's choice for package management
+                    printf("Enter your choice: ");
+                    scanf("%d", &adminPackageChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (adminPackageChoice) {
+                        case 1:
+                            // Add new package
+                            addPackage(packages, &numPackages);
+                            savePackagesToFile(packages, numPackages); // Save packages to file after addition
+                            break;
+                        case 2:
+                            // Delete package
+                            deletePackage(packages, &numPackages);
+                            savePackagesToFile(packages, numPackages); // Save packages to file after deletion
+                            break;
+                        case 3:
+                            // View packages
+                            viewPackagesFromFile(packages, numPackages);
+                            break;
+                        case 4:
+                            printf("Exiting Admin Package Management...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                } else if (role == USER) {
+                    printf("\nView Packages Menu:\n");
+                    printf("1. View All Packages\n");
+                    printf("2. Exit\n");
+            
+                    int userPackageChoice;
+                    printf("Enter your choice: ");
+                    scanf("%d", &userPackageChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userPackageChoice) {
+                        case 1:
+                            // View all packages
+                            viewPackagesFromFile(packages, numPackages);
+                            break;
+                        case 2:
+                            printf("Exiting View Packages Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 4:
+                if (role == ADMIN) {
+                    int adminDestinationChoice;
+                    printf("\nAdmin Destination Management Menu:\n");
+                    printf("1. Add Destination\n");
+                    printf("2. Delete Destination\n");
+                    printf("3. View Destinations\n");
+                    printf("4. Exit\n");
+            
+                    // Get admin's choice for destination management
+                    printf("Enter your choice: ");
+                    scanf("%d", &adminDestinationChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (adminDestinationChoice) {
+                        case 1:
+                            // Add new destination
+                            addDestination(destinations, &numDestinations);
+                            saveDestinationsToFile(destinations, numDestinations); // Save destinations to file after addition
+                            break;
+                        case 2:
+                            // Delete destination
+                            deleteDestination(destinations, &numDestinations);
+                            saveDestinationsToFile(destinations, numDestinations); // Save destinations to file after deletion
+                            break;
+                        case 3:
+                            // View destinations
+                            viewDestinationsFromFile();
+                            break;
+                        case 4:
+                            printf("Exiting Admin Destination Management...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                } else if (role == USER) {
+                    printf("\nView Destinations Menu:\n");
+                    printf("1. View All Destinations\n");
+                    printf("2. Exit\n");
+            
+                    int userDestinationChoice;
+                    printf("Enter your choice: ");
+                    scanf("%d", &userDestinationChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userDestinationChoice) {
+                        case 1:
+                            // View all destinations
+                            viewDestinationsFromFile();
+                            break;
+                        case 2:
+                            printf("Exiting View Destinations Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 5:
+                if (role == USER) {
+                    int userBookingChoice;
+                    printf("\nBooking Menu:\n");
+                    printf("1. Book a Flight\n");
+                    printf("2. Book a Hotel\n");
+                    printf("3. Book a Package\n");
+                    printf("4. Exit\n");
+            
+                    printf("Enter your choice: ");
+                    scanf("%d", &userBookingChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userBookingChoice) {
+                        case 1:
+                            // Book a flight
+                            bookFlight(flights, numFlights);
+                            break;
+                        case 2:
+                            // Book a hotel
+                            bookHotel(hotels, numHotels);
+                            break;
+                        case 3:
+                            // Book a package
+                            bookPackage(packages, numPackages);
+                            break;
+                        case 4:
+                            printf("Exiting Booking Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 6:
+                if (role == USER) {
+                    int userFeedbackChoice;
+                    printf("\nFeedback Menu:\n");
+                    printf("1. Provide Feedback for a Flight\n");
+                    printf("2. Provide Feedback for a Hotel\n");
+                    printf("3. Provide Feedback for a Package\n");
+                    printf("4. Exit\n");
+            
+                    printf("Enter your choice: ");
+                    scanf("%d", &userFeedbackChoice);
+                    getchar(); // Consume newline character
+            
+                    switch (userFeedbackChoice) {
+                        case 1:
+                            // Provide feedback for a flight
+                            provideFlightFeedback(flights, numFlights);
+                            break;
+                        case 2:
+                            // Provide feedback for a hotel
+                            provideHotelFeedback(hotels, numHotels);
+                            break;
+                        case 3:
+                            // Provide feedback for a package
+                            providePackageFeedback(packages, numPackages);
+                            break;
+                        case 4:
+                            printf("Exiting Feedback Menu...\n");
+                            break;
+                        default:
+                            printf("Invalid choice. Please try again.\n");
+                    }
+                }
+                break;
+
+            case 7:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
     }
 
     return 0;
