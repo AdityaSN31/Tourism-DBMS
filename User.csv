@@ -1,6 +1,5 @@
 username,password,role
-aditya,123,admin
-raj,123,admin
-neer,123,admin
-janhvi,456,user
-
+aditya,c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d,admin
+raj,c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d,admin
+neer,c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d,admin
+janhvi,5b734259eb658d2419db42500bb96d93f7a84c7e4d431b920e2d25a7eb50cf57,user
