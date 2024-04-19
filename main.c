@@ -12,6 +12,19 @@
 #define MAX_PLACES_TO_VISIT 5
 #define MAX_DATE_LENGTH 20
 #define MAX_REVIEW_LENGTH 200
+#define MAX_PACKAGE_NAME_LENGTH 100
+#define MAX_REGION_LENGTH 50
+#define MAX_ITINERARY_LENGTH 50
+#define MAX_DESTINATIONS 50
+#define SALT_SIZE 32
+#define HASH_SIZE 64
+#define MAX_CSV_LINE_LENGTH 100
+#define MAX_PACKAGES 50
+#define MAX_DESTINATIONS_PER_PACKAGE 50
+#define MAX_FLIGHTS 50
+#define MAX_HOTELS 100
+#define MAX_FEEDBACK_LENGTH 100
+#define MAX_FILE_NAME_LENGTH 50
 
 typedef enum {
     USER,
@@ -64,6 +77,35 @@ typedef struct {
     int numNights;
     float costPerNight;
 } Hotel;
+
+// Define a custom type BookingType to represent different types of bookings
+typedef enum {
+    FLIGHT_BOOKING,
+    HOTEL_BOOKING,
+    PACKAGE_BOOKING
+} BookingType;
+
+typedef struct {
+    BookingType type;
+    void *bookingObject; // Pointer to the booked object
+    int numPeople;
+    char bookingDate[MAX_DATE_LENGTH];
+} Booking;
+
+// Enum to represent feedback types
+typedef enum {
+    FLIGHT,
+    HOTEL,
+    PACKAGE
+} FeedbackType;
+
+// Define a structure for feedback
+typedef struct {
+    FeedbackType type;
+    void *object;
+    char comment[MAX_FEEDBACK_LENGTH];
+    int rating;
+} Feedback;
 
 
 /*
@@ -197,7 +239,8 @@ bool authenticateUser(const char *username, const char *password) {
     // Here, you would typically retrieve the salt and hash associated with the username
     // For simplicity, we'll use hardcoded values
     char storedSalt[SALT_SIZE + 1] = "RandomSalt123";
-    char storedHash[HASH_SIZE + 1] = "c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d8a5e18ad8568c0160f06bcf76d34518dc3652cf34f67e1aaf19545d5d025b7ff6";
+    char storedHash[HASH_SIZE + 1] = "c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d";
+
 
     char saltedPassword[MAX_NAME_LENGTH + SALT_SIZE + 1];
     char computedHash[HASH_SIZE + 1];
@@ -224,7 +267,7 @@ bool authenticateUser(const char *username, const char *password) {
 }
 
 // Function to add a new tourist
-void addTourist(User *user) {
+void addUser(User *user) {
     printf("Enter tourist name: ");
     fgets(user->name, sizeof(user->name), stdin);
     user->name[strcspn(user->name, "\n")] = '\0'; // Remove trailing newline
@@ -238,14 +281,14 @@ void addTourist(User *user) {
 }
 
 // Function to delete a tourist
-void deleteTourist(User *user) {
+void deleteUser(User *user) {
     printf("Tourist %s deleted successfully.\n", user->name);
     // No action needed since the data will not be persisted after the program exits
 }
 
 
 // Function to add a new tourist to the CSV file
-void addTouristFromFile(User *user) {
+void addUserFromFile(User *user) {
     printf("Enter tourist name: ");
     fgets(user->name, sizeof(user->name), stdin);
     user->name[strcspn(user->name, "\n")] = '\0'; // Remove trailing newline
@@ -267,7 +310,7 @@ void addTouristFromFile(User *user) {
 }
 
 // Function to delete a tourist from the CSV file
-void deleteTouristFromFile(User *user) {
+void deleteUserFromFile(User *user) {
     printf("Tourist %s deleted successfully.\n", user->name);
 
     FILE *file = fopen("users.csv", "r"); // Open the CSV file in read mode
@@ -1135,6 +1178,176 @@ void loadHotelFromFile(Hotel hotels[], int *numHotels) {
     fclose(file);
 }
 
+// Function to book a flight
+void bookFlight(Flight flights[], int numFlights, Booking *booking, int numPeople, const char *bookingDate) {
+    // Check if there are flights available
+    if (numFlights > 0) {
+        // Let's assume we are booking the first flight in the array
+        booking->type = FLIGHT_BOOKING; // Set booking type to flight
+        booking->bookingObject = &flights[0]; // Set the booking object to the first flight
+        booking->numPeople = numPeople; // Set the number of people for the booking
+        strncpy(booking->bookingDate, bookingDate, MAX_DATE_LENGTH - 1); // Copy booking date
+        booking->bookingDate[MAX_DATE_LENGTH - 1] = '\0'; // Ensure null-termination
+        printf("Flight booked successfully!\n");
+    } else {
+        printf("No flights available for booking.\n");
+    }
+}
+
+// Function to book a hotel
+void bookHotel(Hotel hotels[], int numHotels, Booking *booking, int numPeople, const char *bookingDate) {
+    // Check if there are hotels available
+    if (numHotels > 0) {
+        // Let's assume we are booking the first hotel in the array
+        booking->type = HOTEL_BOOKING; // Set booking type to hotel
+        booking->bookingObject = &hotels[0]; // Set the booking object to the first hotel
+        booking->numPeople = numPeople; // Set the number of people for the booking
+        strncpy(booking->bookingDate, bookingDate, MAX_DATE_LENGTH - 1); // Copy booking date
+        booking->bookingDate[MAX_DATE_LENGTH - 1] = '\0'; // Ensure null-termination
+        printf("Hotel booked successfully!\n");
+    } else {
+        printf("No hotels available for booking.\n");
+    }
+}
+
+// Function to book a package
+void bookPackage(Package packages[], int numPackages, Booking *booking, int numPeople, const char *bookingDate) {
+    // Check if there are packages available
+    if (numPackages > 0) {
+        // Let's assume we are booking the first package in the array
+        booking->type = PACKAGE_BOOKING; // Set booking type to package
+        booking->bookingObject = &packages[0]; // Set the booking object to the first package
+        booking->numPeople = numPeople; // Set the number of people for the booking
+        strncpy(booking->bookingDate, bookingDate, MAX_DATE_LENGTH - 1); // Copy booking date
+        booking->bookingDate[MAX_DATE_LENGTH - 1] = '\0'; // Ensure null-termination
+        printf("Package booked successfully!\n");
+    } else {
+        printf("No packages available for booking.\n");
+    }
+}
+
+// Function to save feedback to file
+void saveFeedbackToFile(const char *fileName, Feedback feedback) {
+    FILE *file = fopen(fileName, "a");
+    if (file == NULL) {
+        printf("Error opening file %s\n", fileName);
+        return;
+    }
+    fprintf(file, "Type: ");
+    switch (feedback.type) {
+        case FLIGHT:
+            fprintf(file, "Flight\n");
+            break;
+        case HOTEL:
+            fprintf(file, "Hotel\n");
+            break;
+        case PACKAGE:
+            fprintf(file, "Package\n");
+            break;
+        default:
+            fprintf(file, "Unknown\n");
+            break;
+    }
+    fprintf(file, "Comment: %s\n", feedback.comment);
+    fprintf(file, "Rating: %d\n", feedback.rating);
+    fprintf(file, "------------------------------------\n");
+    fclose(file);
+}
+
+// Function to provide feedback
+void provideFeedback(FeedbackType type, void *object, char *comment, int rating) {
+    Feedback feedback;
+
+    // Initialize feedback
+    feedback.type = type;
+    feedback.object = object;
+    strncpy(feedback.comment, comment, MAX_FEEDBACK_LENGTH - 1);
+    feedback.comment[MAX_FEEDBACK_LENGTH - 1] = '\0'; // Ensure null-terminated string
+    feedback.rating = rating;
+
+    // Save feedback to file
+    saveFeedbackToFile("feedback.txt", feedback);
+
+    // Process feedback as needed
+    printf("Feedback provided:\n");
+    switch (type) {
+        case FLIGHT:
+            printf("Type: Flight\n");
+            printf("Comment: %s\n", feedback.comment);
+            printf("Rating: %d\n", feedback.rating);
+            // Additional processing specific to flight feedback
+            break;
+        case HOTEL:
+            printf("Type: Hotel\n");
+            printf("Comment: %s\n", feedback.comment);
+            printf("Rating: %d\n", feedback.rating);
+            // Additional processing specific to hotel feedback
+            break;
+        case PACKAGE:
+            printf("Type: Package\n");
+            printf("Comment: %s\n", feedback.comment);
+            printf("Rating: %d\n", feedback.rating);
+            // Additional processing specific to package feedback
+            break;
+        default:
+            printf("Unknown feedback type.\n");
+            break;
+    }
+}
+
+
+// Function to provide feedback for flights
+void provideFlightFeedback(Flight flights[], int numFlights, const char *fileName) {
+    printf("\nProvide feedback for flights:\n");
+    for (int i = 0; i < numFlights; i++) {
+        printf("Flight %s - %s\n", flights[i].flightNumber, flights[i].airline);
+        char comment[MAX_FEEDBACK_LENGTH];
+        int rating;
+        printf("Enter your comment for this flight: ");
+        fgets(comment, sizeof(comment), stdin);
+        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
+        printf("Enter your rating (1-5) for this flight: ");
+        scanf("%d", &rating);
+        getchar(); // Consume newline character
+        provideFeedback(FLIGHT, &flights[i], comment, rating);
+    }
+}
+
+// Function to provide feedback for hotels
+void provideHotelFeedback(Hotel hotels[], int numHotels, const char *fileName) {
+    printf("\nProvide feedback for hotels:\n");
+    for (int i = 0; i < numHotels; i++) {
+        printf("-> %s\n", hotels[i].name);
+        char comment[MAX_FEEDBACK_LENGTH];
+        int rating;
+        printf("Enter your comment for this hotel: ");
+        fgets(comment, sizeof(comment), stdin);
+        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
+        printf("Enter your rating (1-5) for this hotel: ");
+        scanf("%d", &rating);
+        getchar(); // Consume newline character
+        provideFeedback(HOTEL, &hotels[i], comment, rating);
+    }
+}
+
+// Function to provide feedback for packages
+void providePackageFeedback(Package packages[], int numPackages, const char *fileName) {
+    printf("\nProvide feedback for packages:\n");
+    for (int i = 0; i < numPackages; i++) {
+        printf("-> %s\n", packages[i].description);
+        char comment[MAX_FEEDBACK_LENGTH];
+        int rating;
+        printf("Enter your comment for this package: ");
+        fgets(comment, sizeof(comment), stdin);
+        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
+        printf("Enter your rating (1-5) for this package: ");
+        scanf("%d", &rating);
+        getchar(); // Consume newline character
+        provideFeedback(PACKAGE, &packages[i], comment, rating);
+    }
+}
+
+
 
 
 int main() {
@@ -1143,6 +1356,19 @@ int main() {
     char username[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH];
     UserRole role;
+    Flight flights[MAX_FLIGHTS]; // Declare an array to store flights
+    int numFlights = 0; // Variable to keep track of the number of flights
+    Hotel hotels[MAX_HOTELS]; // Declare an array to store hotels
+    int numHotels = 0; // Variable to keep track of the number of hotels
+    Package packages[MAX_PACKAGES]; // Declare an array to store packages
+    int numPackages = 0; // Variable to keep track of the number of packages
+    Destination destinations[MAX_DESTINATIONS]; // Declare an array to store destinations
+    int numDestinations = 0; // Variable to keep track of the number of destinations
+    Booking booking; // Assuming Booking is a struct type defined somewhere in your code
+    int numPeople;
+    char bookingDate[MAX_DATE_LENGTH]; // Assuming MAX_DATE_LENGTH is defined somewhere in your code
+
+
 
     // Authenticate user
     printf("Welcome to the Travel Management System\n");
@@ -1391,13 +1617,11 @@ int main() {
                     switch (adminDestinationChoice) {
                         case 1:
                             // Add new destination
-                            addDestination(destinations, &numDestinations);
-                            saveDestinationsToFile(destinations, numDestinations); // Save destinations to file after addition
+                            addDestinationFromUser(destinations); 
                             break;
                         case 2:
                             // Delete destination
-                            deleteDestination(destinations, &numDestinations);
-                            saveDestinationsToFile(destinations, numDestinations); // Save destinations to file after deletion
+                            deleteDestinationFromUser(destinations);
                             break;
                         case 3:
                             // View destinations
@@ -1447,26 +1671,27 @@ int main() {
                     getchar(); // Consume newline character
             
                     switch (userBookingChoice) {
-                        case 1:
-                            // Book a flight
-                            bookFlight(flights, numFlights);
-                            break;
-                        case 2:
-                            // Book a hotel
-                            bookHotel(hotels, numHotels);
-                            break;
-                        case 3:
-                            // Book a package
-                            bookPackage(packages, numPackages);
-                            break;
-                        case 4:
-                            printf("Exiting Booking Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                }
-                break;
+                      case 1:
+                          // Book a flight
+                          bookFlight(flights, numFlights, &booking, numPeople, bookingDate);
+                          break;
+                      case 2:
+                          // Book a hotel
+                          bookHotel(hotels, numHotels, &booking, numPeople, bookingDate);
+                          break;
+                      case 3:
+                          // Book a package
+                          bookPackage(packages, numPackages, &booking, numPeople, bookingDate);
+                          break;
+                      case 4:
+                          printf("Exiting Booking Menu...\n");
+                          break;
+                      default:
+                          printf("Invalid choice. Please try again.\n");
+                  }
+                  break;
+
+
 
             case 6:
                 if (role == USER) {
@@ -1476,32 +1701,33 @@ int main() {
                     printf("2. Provide Feedback for a Hotel\n");
                     printf("3. Provide Feedback for a Package\n");
                     printf("4. Exit\n");
-            
+
                     printf("Enter your choice: ");
                     scanf("%d", &userFeedbackChoice);
                     getchar(); // Consume newline character
-            
+
                     switch (userFeedbackChoice) {
-                        case 1:
-                            // Provide feedback for a flight
-                            provideFlightFeedback(flights, numFlights);
-                            break;
-                        case 2:
-                            // Provide feedback for a hotel
-                            provideHotelFeedback(hotels, numHotels);
-                            break;
-                        case 3:
-                            // Provide feedback for a package
-                            providePackageFeedback(packages, numPackages);
-                            break;
-                        case 4:
-                            printf("Exiting Feedback Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
+                      case 1:
+                          // Provide feedback for a flight
+                          provideFlightFeedback(flights, numFlights, "flight_feedback.txt");
+                          break;
+                      case 2:
+                          // Provide feedback for a hotel
+                          provideHotelFeedback(hotels, numHotels, "hotel_feedback.txt");
+                          break;
+                      case 3:
+                          // Provide feedback for a package
+                          providePackageFeedback(packages, numPackages, "package_feedback.txt");
+                          break;
+                      case 4:
+                          printf("Exiting Feedback Menu...\n");
+                          break;
+                      default:
+                          printf("Invalid choice. Please try again.\n");
+                  }
                 }
                 break;
+
 
             case 7:
                 printf("Exiting...\n");
@@ -1512,4 +1738,5 @@ int main() {
     }
 
     return 0;
+  }
 }
