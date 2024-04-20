@@ -36,6 +36,10 @@
 #define USERS_FILE "User.csv" // Define the filename appropriately
 #define MAX_DISTANCECC_LENGTH 50
 #define MAX_CPN_LENGTH 50
+#define MAX_TEXT_LENGTH 50
+#define MAX_BEST_TIME_TO_VISIT 50
+#define MAX_FIELDS 5 // We have 5 fields in our CSV: Name, Description, Location, Places to Visit, Best Time to Visit
+
 
 // SHA-512 Constants
 const uint64_t K[80] = {
@@ -149,10 +153,9 @@ typedef enum {
 
 // Define a structure for feedback
 typedef struct {
-    FeedbackType type;
-    void *object;
-    char comment[MAX_FEEDBACK_LENGTH];
-    int rating;
+    char username[MAX_NAME_LENGTH];
+    char text[MAX_FEEDBACK_LENGTH];
+    int rating; // New field for rating out of 5
 } Feedback;
 
 
