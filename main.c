@@ -6,7 +6,6 @@
 #include <ctype.h>
 
 
-#define MAX_NAME_LENGTH 50
 #define MAX_LENGTH_LENGTH 50
 #define MAX_FIELD_LENGTH 50
 #define MAX_EMAIL_LENGTH 50
@@ -30,7 +29,6 @@
 #define MAX_FEEDBACK_LENGTH 100
 #define MAX_FILE_NAME_LENGTH 50
 #define ROTR(x, n) (((x) >> (n)) | ((x) << (64 - (n))))  // Rotate right (circular right shift) operation
-#define MAX_NAME_LENGTH 50
 #define MAX_ROLE_LENGTH 20
 #define MAX_LINE_LENGTH 100 // Adjust this size as needed
 #define USERS_FILE "User.csv" // Define the filename appropriately
@@ -40,6 +38,13 @@
 #define MAX_INPUT_LENGTH 100
 #define MAX_BEST_TIME_TO_VISIT 50
 #define MAX_FIELDS 5 // We have 5 fields in our CSV: Name, Description, Location, Places to Visit, Best Time to Visit
+#define MAX_NAME_LENGTH 100
+#define MAX_CITY_LENGTH 50
+#define MAX_AIRLINE_LENGTH 50
+#define MAX_FLIGHT_NUMBER_LENGTH 20
+#define MAX_TIME_LENGTH 10
+#define MAX_COST_LENGTH 20
+
 
 
 // SHA-512 Constants
@@ -1090,40 +1095,81 @@ void deleteFlight(Flight flights[], int *numFlights) {
     }
 }
 
-// Function to add a new flight (for admin) to a CSV file
+
+// Function to add double quotes if a field contains a comma
+void addDoubleQuotes(char *input) {
+    if (strchr(input, ',') != NULL) {
+        size_t length = strlen(input);
+        // Shift the string to the right to make space for quotes
+        for (int i = length; i >= 0; i--) {
+            input[i + 1] = input[i];
+        }
+        // Add double quotes at the start and end
+        input[0] = '\"';
+        input[length + 1] = '\"';
+        input[length + 2] = '\0';  // Ensure null-termination
+    }
+}
+
+
 void addFlightToFile(Flight *flight) {
     printf("Enter city: ");
     fgets(flight->city, sizeof(flight->city), stdin);
     flight->city[strcspn(flight->city, "\n")] = '\0';
+    addDoubleQuotes(flight->city);
+
     printf("Enter airline: ");
     fgets(flight->airline, sizeof(flight->airline), stdin);
-    flight->airline[strcspn(flight->airline, "\n")] = '\0'; // Remove trailing newline
+    flight->airline[strcspn(flight->airline, "\n")] = '\0';
+    addDoubleQuotes(flight->airline);
+
     printf("Enter flight number: ");
     fgets(flight->flightNumber, sizeof(flight->flightNumber), stdin);
-    flight->flightNumber[strcspn(flight->flightNumber, "\n")] = '\0'; // Remove trailing newline
+    flight->flightNumber[strcspn(flight->flightNumber, "\n")] = '\0';
+    addDoubleQuotes(flight->flightNumber);
+
     printf("Enter departure: ");
     fgets(flight->departure, sizeof(flight->departure), stdin);
-    flight->departure[strcspn(flight->departure, "\n")] = '\0'; // Remove trailing newline
+    flight->departure[strcspn(flight->departure, "\n")] = '\0';
+    addDoubleQuotes(flight->departure);
+
     printf("Enter arrival: ");
     fgets(flight->arrival, sizeof(flight->arrival), stdin);
-    flight->arrival[strcspn(flight->arrival, "\n")] = '\0'; // Remove trailing newline
+    flight->arrival[strcspn(flight->arrival, "\n")] = '\0';
+    addDoubleQuotes(flight->arrival);
+
     printf("Enter departure time: ");
     fgets(flight->departureTime, sizeof(flight->departureTime), stdin);
-    flight->departureTime[strcspn(flight->departureTime, "\n")] = '\0'; // Remove trailing newline
+    flight->departureTime[strcspn(flight->departureTime, "\n")] = '\0';
+    addDoubleQuotes(flight->departureTime);
+
     printf("Enter arrival time: ");
     fgets(flight->arrivalTime, sizeof(flight->arrivalTime), stdin);
-    flight->arrivalTime[strcspn(flight->arrivalTime, "\n")] = '\0'; // Remove trailing newline
+    flight->arrivalTime[strcspn(flight->arrivalTime, "\n")] = '\0';
+    addDoubleQuotes(flight->arrivalTime);
+
     printf("Enter cost: ");
     fgets(flight->cost, sizeof(flight->cost), stdin);
-    flight->cost[strcspn(flight->cost, "\n")] = '\0'; 
+    flight->cost[strcspn(flight->cost, "\n")] = '\0';
+    addDoubleQuotes(flight->cost);
 
-    FILE *file = fopen("Flights.csv", "a");
+    FILE *file = fopen("Flights.csv", "a+");
     if (file == NULL) {
-        error("Unable to open file for writing");
+        perror("Unable to open file for writing");
+        return;
     }
-    fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s\n", flight->city, flight->airline, flight->flightNumber, flight->departure,
-            flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
-    fclose(file);
+
+    // Check if the file is empty
+    fseek(file, 0, SEEK_END);
+    if (ftell(file) == 0) {  // The first time writing to the file
+        fprintf(file, "\n");  // Add a newline character to initialize the CSV
+    }
+
+    // Write the flight information to the CSV file
+    fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s\n",
+        flight->city, flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
+
+    fclose(file);  // Close the file
 }
 
 // Function to delete a flight from a CSV file
@@ -1791,10 +1837,11 @@ int main() {
                 /*
                 case 3:
                     deleteDestination();
-                    break;
-                case 4:
-                    addFlight();
                     break;*/
+                case 4:
+                    Flight flight[MAX_INPUT_LENGTH];
+                    addFlightToFile(flight);
+                    break;
                 case 5:
                     Flight flights[MAX_FLIGHTS];
                     int numFlights = 0;
