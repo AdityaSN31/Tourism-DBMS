@@ -1684,8 +1684,9 @@ int main() {
 
             switch (choice) {
                 case 1:
-                    viewDestinations();
+                    viewAllDestinations();
                     break;
+                /*
                 case 2:
                     viewPackages();
                     break;
@@ -1704,6 +1705,7 @@ int main() {
                 case 7:
                     viewUserDetails(username);
                     break;
+                */
                 case 8:
                     printf("Logging out...\n");
                     break;
