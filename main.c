@@ -594,41 +594,52 @@ void deleteDestination(Destination destinations[], int *numDestinations) {
         printf("No destinations to delete.\n");
     }
 }
-
 // Function to add a new destination from user input and save to CSV file
 void addDestinationFromUser(Destination *destination) {
     printf("Enter destination name: ");
     fgets(destination->name, sizeof(destination->name), stdin);
     destination->name[strcspn(destination->name, "\n")] = '\0'; // Remove trailing newline
+
     printf("Enter description: ");
     fgets(destination->description, sizeof(destination->description), stdin);
     destination->description[strcspn(destination->description, "\n")] = '\0'; // Remove trailing newline
+
     printf("Enter location: ");
     fgets(destination->location, sizeof(destination->location), stdin);
     destination->location[strcspn(destination->location, "\n")] = '\0'; // Remove trailing newline
+
     printf("Enter best time to visit: ");
     fgets(destination->bestTimeToVisit, sizeof(destination->bestTimeToVisit), stdin);
     destination->bestTimeToVisit[strcspn(destination->bestTimeToVisit, "\n")] = '\0'; // Remove trailing newline
-    printf("Enter places to visit (max %d):\n", MAX_PLACES_TO_VISIT);
-    for (int i = 0; i < MAX_PLACES_TO_VISIT; ++i) {
-        printf("Place %d: ", i + 1);
-        fgets(destination->placesToVisit[i], sizeof(destination->placesToVisit[i]), stdin);
-        destination->placesToVisit[i][strcspn(destination->placesToVisit[i], "\n")] = '\0'; // Remove trailing newline
-    }
+
+    // Collect all places to visit as a single comma-separated string
+    printf("Enter places to visit, separated by commas: ");
+    char placesToVisit[MAX_INPUT_LENGTH]; // To store places
+    fgets(placesToVisit, sizeof(placesToVisit), stdin);
+    placesToVisit[strcspn(placesToVisit, "\n")] = '\0'; // Remove trailing newline
+
+    // Copy the combined places to visit into the destination
+    strncpy(destination->placesToVisit, placesToVisit, sizeof(destination->placesToVisit));
 
     // Open the CSV file in append mode
-    FILE *file = fopen("destinations.csv", "a");
+    FILE *file = fopen("Destination.csv", "a");
     if (file == NULL) {
         perror("Unable to open file for writing");
         exit(EXIT_FAILURE);
     }
-    // Write the destination data to the CSV file
-    fprintf(file, "%s,%s,%s,%s,", destination->name, destination->description,
-            destination->location, destination->bestTimeToVisit);
-    for (int i = 0; i < MAX_PLACES_TO_VISIT; ++i) {
-        fprintf(file, "%s,", destination->placesToVisit[i]);
+
+    // Write the destination data to the CSV file with double quotes for safety
+    if (fprintf(file, "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                destination->name,
+                destination->description,
+                destination->location,
+                destination->placesToVisit,
+                destination->bestTimeToVisit) < 0) {
+        perror("Error writing to CSV file");
+        fclose(file);
+        exit(EXIT_FAILURE);
     }
-    fprintf(file, "\n");
+
     fclose(file);
 }
 
@@ -710,36 +721,40 @@ void deleteDestinationFromFile(const char *destinationName) {
     rename("temp_destinations.csv", "destinations.csv");
 }
 
-// Function to view all destinations in the CSV file
-void viewAllDestinations() {
-    // Open the destinations CSV file for reading
-    FILE *file = fopen("destinations.csv", "r");
-    if (file == NULL) {
-        error("Unable to open destinations file");
+void removeQuotationMarks(char *str);
+
+void viewAllDestinations(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        fprintf(stderr, "Error opening file: %s\n", filename);
+        return;
     }
 
-    // Print column headers for destinations
+    char line[256];
     printf("Destinations:\n");
-    printf("%-20s | %-50s | %-20s | %-50s | %-50s\n", "Name", "Description", "Location", "Places to Visit", "Best Time to Visit");
-    printf("--------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------------------------------------------------\n");
+    printf("Name                 | Description                                       | Location          | Places to Visit                                    | Best Time to Visit\n");
+    printf("--------------------------------------------------------------------------------------------------------\n");
 
-    char line[MAX_NAME_LENGTH + MAX_DESCRIPTION_LENGTH + MAX_LOCATION_LENGTH +
-              MAX_DESCRIPTION_LENGTH * MAX_PLACES_TO_VISIT + MAX_DESCRIPTION_LENGTH + 10];
-    
-    // Read each line from the file and print destination details
     while (fgets(line, sizeof(line), file)) {
-        char name[MAX_NAME_LENGTH], description[MAX_DESCRIPTION_LENGTH], location[MAX_LOCATION_LENGTH], 
-             placesToVisit[MAX_PLACES_TO_VISIT][MAX_DESCRIPTION_LENGTH], bestTimeToVisit[MAX_DESCRIPTION_LENGTH];
+        // Break the line into different fields based on delimiters (assuming CSV)
+        char *name = strtok(line, ",");
+        char *description = strtok(NULL, ",");
+        char *location = strtok(NULL, ",");
+        char *placesToVisit = strtok(NULL, ",");
+        char *bestTime = strtok(NULL, ",");
 
-        // Extract data from CSV line
-        sscanf(line, "%49[^,],%99[^,],%49[^,],%99[^,],%99[^\n]\n", 
-               name, description, location, placesToVisit[0], bestTimeToVisit);
+        // Remove quotation marks from the parsed fields
+        if (name) removeQuotationMarks(name);
+        if (description) removeQuotationMarks(description);
+        if (location) removeQuotationMarks(location);
+        if (placesToVisit) removeQuotationMarks(placesToVisit);
+        if (bestTime) removeQuotationMarks(bestTime);
 
-        // Print destination details
-        printf("%-20s | %-50s | %-20s | %-50s | %-50s\n", name, description, location, placesToVisit[0], bestTimeToVisit);
+        // Output the formatted data
+        printf("%-20s | %-50s | %-20s | %-50s | %-20s\n", name, description, location, placesToVisit, bestTime);
     }
 
-    // Close the file
     fclose(file);
 }
 
@@ -1154,7 +1169,7 @@ void saveFlightsToFile(Flight flights[], int numFlights) {
 }
 
 // Function to view flights from a CSV file
-void viewallFlights(Flight flights[], int numFlights) {
+void viewAllFlights(Flight flights[], int numFlights) {
     FILE *file = fopen("Flights.csv", "r");
     if (file == NULL) {
         printf("No flights found in the database.\n");
@@ -1447,47 +1462,6 @@ void saveFeedbackToFile(const char *fileName, Feedback feedback) {
     fclose(file);
 }
 
-// Function to provide feedback
-void provideFeedback(FeedbackType type, void *object, char *comment, int rating) {
-    Feedback feedback;
-
-    // Initialize feedback
-    feedback.type = type;
-    feedback.object = object;
-    strncpy(feedback.comment, comment, MAX_FEEDBACK_LENGTH - 1);
-    feedback.comment[MAX_FEEDBACK_LENGTH - 1] = '\0'; // Ensure null-terminated string
-    feedback.rating = rating;
-
-    // Save feedback to file
-    saveFeedbackToFile("feedback.txt", feedback);
-
-    // Process feedback as needed
-    printf("Feedback provided:\n");
-    switch (type) {
-        case FLIGHT:
-            printf("Type: Flight\n");
-            printf("Comment: %s\n", feedback.comment);
-            printf("Rating: %d\n", feedback.rating);
-            // Additional processing specific to flight feedback
-            break;
-        case HOTEL:
-            printf("Type: Hotel\n");
-            printf("Comment: %s\n", feedback.comment);
-            printf("Rating: %d\n", feedback.rating);
-            // Additional processing specific to hotel feedback
-            break;
-        case PACKAGE:
-            printf("Type: Package\n");
-            printf("Comment: %s\n", feedback.comment);
-            printf("Rating: %d\n", feedback.rating);
-            // Additional processing specific to package feedback
-            break;
-        default:
-            printf("Unknown feedback type.\n");
-            break;
-    }
-}
-
 
 // Function to provide feedback for flights
 void provideFlightFeedback(Flight flights[], int numFlights, const char *fileName) {
@@ -1538,6 +1512,113 @@ void providePackageFeedback(Package packages[], int numPackages, const char *fil
         getchar(); // Consume newline character
         provideFeedback(PACKAGE, &packages[i], comment, rating);
     }
+}
+
+// Function to check if the user has already submitted feedback
+int hasSubmittedFeedback(const char *username) {
+    FILE *file = fopen("Feedbacks.csv", "r");
+    if (file == NULL) {
+        return 0; // Assume user has not submitted feedback if file doesn't exist
+    }
+    
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char *token = strtok(line, ",");
+        if (strcmp(token, username) == 0) {
+            fclose(file);
+            return 1; // User has already submitted feedback
+        }
+    }
+    
+    fclose(file);
+    return 0; // User has not submitted feedback
+}
+
+// Function to submit feedback
+void provideFeedback(const char *username) {
+    printf("\nSubmit Your Feedback:\n");
+
+    // Check if user has already submitted feedback
+    if (hasSubmittedFeedback(username)) {
+        printf("You have already submitted feedback.\n");
+        return;
+    }
+
+    // Open feedback file in append mode
+    FILE *file = fopen("Feedbacks.csv", "a");
+    if (file == NULL) {
+        printf("Error: Unable to open feedback file.\n");
+        return;
+    }
+
+    // Input feedback details
+    Feedback feedback;
+    strcpy(feedback.username, username);
+    printf("Enter your feedback: ");
+    fgets(feedback.text, sizeof(feedback.text), stdin);
+    feedback.text[strcspn(feedback.text, "\n")] = '\0'; // Remove trailing newline
+    printf("Rate your experience (out of 5): ");
+    scanf("%d", &feedback.rating);
+    getchar(); // Consume newline character
+
+    // Write feedback to file in CSV format with comment within quotation marks
+    fprintf(file, "\"%s\",\"%s\",%d\n", feedback.username, feedback.text, feedback.rating);
+
+    // Close file
+    fclose(file);
+
+    printf("Thank you for your feedback!\n");
+}
+
+// Remove leading and trailing quotation marks from a string
+void removeQuotationMarks(char *str) {
+    if (str[0] == '\"' && str[strlen(str) - 1] == '\"') {
+        memmove(str, str + 1, strlen(str)); // Remove leading quotation mark
+        str[strlen(str) - 1] = '\0'; // Remove trailing quotation mark
+    }
+}
+
+
+// Function to view feedbacks in a tabular format with borders
+void viewFeedbacks() {
+    printf("\nFeedbacks:\n");
+
+    // Open feedback file in read mode
+    FILE *file = fopen("Feedbacks.csv", "r");
+    if (file == NULL) {
+        printf("Error: Unable to open feedback file.\n");
+        return;
+    }
+
+    // Print top border line
+    printf("+---------------------+--------------------------------------------------------------+--------+\n");
+
+    // Print table header
+    printf("| %-20s | %-60s | %-6s |\n", "Username", "Feedback", "Rating");
+
+    // Print separator line
+    printf("+---------------------+--------------------------------------------------------------+--------+\n");
+
+    // Read and display feedbacks
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char *username = strtok(line, ",");
+        char *text = strtok(NULL, ","); // Get feedback text
+        char *ratingStr = strtok(NULL, ","); // Get rating as string
+        int rating = atoi(ratingStr); // Convert rating to integer
+
+        // Remove quotation marks from feedback text
+        removeQuotationMarks(text);
+
+        // Print feedback details
+        printf("| %-20s | %-60s | %-6d |\n", username, text, rating);
+    }
+
+    // Close file
+    fclose(file);
+
+    // Print bottom border line
+    printf("+---------------------+--------------------------------------------------------------+--------+\n");
 }
 
 
@@ -1657,29 +1738,38 @@ int main() {
 
             switch (choice) {
                 case 1:
-                    addDestination();
-                    break;
+                     printf("\n--- Add a Destination ---\n");
+   		             addDestinationFromUser(&destination);
+    		         printf("Destination '%s' added successfully.\n", destination.name);
+                     break;
                 case 2:
                     viewAllDestinations();
                     break;
+                /*
                 case 3:
                     deleteDestination();
                     break;
                 case 4:
                     addFlight();
-                    break;
+                    break;*/
                 case 5:
-                    viewAllFlights();
+                    Flight flights[MAX_FLIGHTS];
+                    int numFlights = 0;
+                    viewAllFlights(flights, numFlights);
                     break;
+                /*
                 case 6:
                     deleteFlight();
                     break;
                 case 7:
                     addHotel();
-                    break;
+                    break;*/
                 case 8:
-                    viewAllHotels();
+                    Hotel hotels[MAX_HOTELS];
+                    int numHotels = 0;
+                    viewAllHotels(hotels, numHotels);
                     break;
+                /*
                 case 9:
                     deleteHotel();
                     break;
@@ -1687,20 +1777,20 @@ int main() {
                     addPackage();
                     break;
                 case 11:
-                    viewAllPackages();
+                    viewPackages();
                     break;
                 case 12:
                     deletePackage();
                     break;
                 case 13:
                     viewAndModifyCredentials();
-                    break;
+                    break;*/
                 case 14:
-                    viewFeedbacks();
+                    viewFeedbacks()
                     break;
-                case 15:
+                /*case 15:
                     viewBookings();
-                    break;
+                    break;*/
                 case 16:
                     printf("Logging out...\n");
                     break;
