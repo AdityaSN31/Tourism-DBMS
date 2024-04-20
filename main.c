@@ -3,9 +3,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <ctype.h>
 
 
 #define MAX_NAME_LENGTH 50
+#define MAX_LENGTH_LENGTH 50
+#define MAX_FIELD_LENGTH 50
 #define MAX_EMAIL_LENGTH 50
 #define MAX_MOBILE_LENGTH 15
 #define MAX_DESCRIPTION_LENGTH 100
@@ -27,6 +30,12 @@
 #define MAX_FEEDBACK_LENGTH 100
 #define MAX_FILE_NAME_LENGTH 50
 #define ROTR(x, n) (((x) >> (n)) | ((x) << (64 - (n))))  // Rotate right (circular right shift) operation
+#define MAX_NAME_LENGTH 50
+#define MAX_ROLE_LENGTH 20
+#define MAX_LINE_LENGTH 100 // Adjust this size as needed
+#define USERS_FILE "User.csv" // Define the filename appropriately
+#define MAX_DISTANCECC_LENGTH 50
+#define MAX_CPN_LENGTH 50
 
 // SHA-512 Constants
 const uint64_t K[80] = {
@@ -60,7 +69,8 @@ const uint64_t H[8] = {
 
 typedef enum {
     USER,
-    ADMIN
+    ADMIN,
+    INVALID
 } UserRole;
 
 typedef struct {
@@ -69,6 +79,12 @@ typedef struct {
     char mobile[MAX_MOBILE_LENGTH];
     UserRole role;
 } User;
+
+typedef struct {
+    char userName[MAX_NAME_LENGTH];
+    char password[MAX_EMAIL_LENGTH];
+    UserRole role;
+} Login;
 
 typedef struct {
     char name[MAX_NAME_LENGTH];
@@ -102,13 +118,12 @@ typedef struct {
 } Flight;
 
 typedef struct {
-    char name[MAX_NAME_LENGTH];
     char location[MAX_LOCATION_LENGTH];
-    char checkInDate[MAX_DATE_LENGTH];
-    char checkOutDate[MAX_DATE_LENGTH];
-    int numNights;
-    float costPerNight;
+    char name[MAX_NAME_LENGTH];
+    char costPerNight[MAX_CPN_LENGTH];
+    char distance[MAX_DISTANCECC_LENGTH];
 } Hotel;
+
 
 // Define a custom type BookingType to represent different types of bookings
 typedef enum {
@@ -188,6 +203,26 @@ saveHotelToFile(Hotel hotels[], int numHotels): Saves hotel data from an array o
 viewHotelFromFile(Hotel hotels[], int numHotels): Reads hotel data from a CSV file and displays it to the user.
 loadHotelFromFile(Hotel hotels[], int *numHotels): Loads hotel data from a CSV file into an array of hotels.
 */
+
+// Function to trim leading and trailing whitespace from a string
+char *trim(char *str) {
+    // Trim leading whitespace
+    while (isspace((unsigned char)*str)) {
+        str++;
+    }
+
+    // Trim trailing whitespace
+    char *end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        end--;
+    }
+
+    // Null-terminate the trimmed string
+    *(end + 1) = '\0';
+
+    return str;
+}
+
 
 // Function to clear the input buffer
 void clearInputBuffer() {
@@ -344,36 +379,97 @@ void computeHash(const char *password, const char *salt, uint64_t hash[8]) {
 }
 
 
-// Function to authenticate user
-bool authenticateUser(const char *username, const char *password) {
-    // Here, you would typically retrieve the salt and hash associated with the username
-    // For simplicity, we'll use hardcoded values
-    char storedSalt[SALT_SIZE + 1] = "RandomSalt123";
-    char storedHash[HASH_SIZE + 1] = "c8497363bf0f012fd730ce9d15505e3d0f50f05636780c67c2ec16dfc22ab7d";
-
-
-    char saltedPassword[MAX_NAME_LENGTH + SALT_SIZE + 1];
-    char computedHash[HASH_SIZE + 1];
-
-    // Concatenate password and salt
-    strcpy(saltedPassword, password);
-    strcat(saltedPassword, storedSalt);
-
-    // Compute the hash
-    uint64_t digest[8];
-    sha512((unsigned char *)saltedPassword, strlen(saltedPassword), digest);
-
-    // Convert hash to string
-    for (int i = 0; i < 8; ++i) {
-        sprintf(&computedHash[i * 2], "%02x", (unsigned int)digest[i]);
+UserRole authenticateUser(const char *username, const char *password) {
+    FILE *file = fopen("User.csv", "r");
+    if (file == NULL) {
+        printf("Error opening User.csv file\n");
+        exit(EXIT_FAILURE);
     }
 
-    // Compare computed hash with stored hash
-    if (strcmp(computedHash, storedHash) == 0) {
-        return true; // Authentication successful
-    } else {
-        return false; // Authentication failed
+    UserRole role = INVALID; // Default role
+
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        // Tokenize the line to extract username, password, and role
+        char *token = strtok(line, ",");
+        if (token == NULL) continue; // Skip empty lines
+
+        char storedUsername[MAX_NAME_LENGTH];
+        strcpy(storedUsername, token);
+
+        token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip lines with missing fields
+        char storedPassword[MAX_NAME_LENGTH];
+        strcpy(storedPassword, token);
+
+        token = strtok(NULL, ",");
+        if (token == NULL) continue; // Skip lines with missing fields
+        char storedRole[MAX_ROLE_LENGTH];
+        strcpy(storedRole, token);
+
+        // Compare stored username and password with input
+        if (strcmp(username, storedUsername) == 0 && strcmp(password, storedPassword) == 0) {
+            if (strcmp(trim(storedRole), "admin") == 0) {
+                role = ADMIN;
+            } else {
+                role = USER;
+            }
+            break; // Authentication successful, exit loop
+        }
     }
+
+    fclose(file);
+
+    return role;
+}
+
+// Function to signup
+void signup() {
+    FILE *usersFile = fopen("User.csv", "a+");
+    if (usersFile == NULL) {
+        printf("Error opening User.csv file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char username[MAX_NAME_LENGTH];
+    char password[MAX_NAME_LENGTH];
+
+    printf("\nSignup\n");
+    printf("Username: ");
+    scanf("%s", username);
+
+    // Check if the username already exists in the file
+    rewind(usersFile);
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), usersFile) != NULL) {
+        if (strlen(line) <= 1) continue; // Skip empty lines
+        char savedUsername[MAX_NAME_LENGTH];
+        sscanf(line, "%[^,],", savedUsername);
+        if (strcmp(username, savedUsername) == 0) {
+            printf("Username already exists. Please choose a different username.\n");
+            fclose(usersFile);
+            return;
+        }
+    }
+
+    printf("Password: ");
+    scanf("%s", password);
+
+    // Move file pointer to the end of the file
+    fseek(usersFile, 0, SEEK_END);
+
+    // Check if the file is empty
+    fseek(usersFile, 0, SEEK_END);
+    long fileSize = ftell(usersFile);
+    if (fileSize > 0) {
+        // If file is not empty, add a newline character before appending
+        fprintf(usersFile, "\n");
+    }
+
+    fprintf(usersFile, "%s,%s,user\n", username, password);
+    printf("Signup successful. You can now login.\n");
+
+    fclose(usersFile);
 }
 
 // Function to add a new tourist
@@ -1127,6 +1223,7 @@ void loadFlightsFromFile(Flight flights[], int *numFlights) {
     fclose(file);
 }
 
+
 void addHotel(Hotel hotels[], int *numHotels) {
     if (*numHotels < MAX_HOTELS) {
         Hotel newHotel;
@@ -1136,18 +1233,12 @@ void addHotel(Hotel hotels[], int *numHotels) {
         printf("Enter location: ");
         fgets(newHotel.location, sizeof(newHotel.location), stdin);
         newHotel.location[strcspn(newHotel.location, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter check-in date: ");
-        fgets(newHotel.checkInDate, sizeof(newHotel.checkInDate), stdin);
-        newHotel.checkInDate[strcspn(newHotel.checkInDate, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter check-out date: ");
-        fgets(newHotel.checkOutDate, sizeof(newHotel.checkOutDate), stdin);
-        newHotel.checkOutDate[strcspn(newHotel.checkOutDate, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter number of nights: ");
-        scanf("%d", &newHotel.numNights);
-        clearInputBuffer();
         printf("Enter cost per night: ");
-        scanf("%f", &newHotel.costPerNight);
-        clearInputBuffer();
+        fgets(newHotel.costPerNight, sizeof(newHotel.costPerNight), stdin);
+        newHotel.costPerNight[strcspn(newHotel.costPerNight, "\n")] = '\0';
+        printf("Enter distance from city center: ");
+        fgets(newHotel.distance, sizeof(newHotel.distance), stdin);
+        newHotel.distance[strcspn(newHotel.distance, "\n")] = '\0';
 
         hotels[*numHotels] = newHotel;
         (*numHotels)++;
@@ -1186,25 +1277,19 @@ void addHotelToFile(Hotel *hotel) {
     printf("Enter location: ");
     fgets(hotel->location, sizeof(hotel->location), stdin);
     hotel->location[strcspn(hotel->location, "\n")] = '\0'; // Remove trailing newline
-    printf("Enter check-in date: ");
-    fgets(hotel->checkInDate, sizeof(hotel->checkInDate), stdin);
-    hotel->checkInDate[strcspn(hotel->checkInDate, "\n")] = '\0'; // Remove trailing newline
-    printf("Enter check-out date: ");
-    fgets(hotel->checkOutDate, sizeof(hotel->checkOutDate), stdin);
-    hotel->checkOutDate[strcspn(hotel->checkOutDate, "\n")] = '\0'; // Remove trailing newline
-    printf("Enter number of nights: ");
-    scanf("%d", &hotel->numNights);
-    clearInputBuffer();
+    printf("Enter distance from city center: ");
+    fgets(hotel->distance, sizeof(hotel->distance), stdin);
+    hotel->distance[strcspn(hotel->distance, "\n")] = '\0';
     printf("Enter cost per night: ");
-    scanf("%f", &hotel->costPerNight);
-    clearInputBuffer();
+    fgets(hotel->costPerNight, sizeof(hotel->costPerNight), stdin);
+    hotel->costPerNight[strcspn(hotel->costPerNight, "\n")] = '\0';
 
-    FILE *file = fopen("hotels.csv", "a");
+    FILE *file = fopen("Hotels.csv", "a");
     if (file == NULL) {
         error("Unable to open file for writing");
     }
-    fprintf(file, "%s,%s,%s,%s,%d,%.2f\n", hotel->name, hotel->location, hotel->checkInDate,
-            hotel->checkOutDate, hotel->numNights, hotel->costPerNight);
+    fprintf(file, "%s,%s,%s,%s\n", hotel->name, hotel->location,
+              hotel->costPerNight, hotel->distance);
     fclose(file);
 }
 
@@ -1212,7 +1297,7 @@ void addHotelToFile(Hotel *hotel) {
 void deleteHotelFromFile(Hotel *hotel) {
     printf("Hotel %s deleted successfully.\n", hotel->name);
 
-    FILE *file = fopen("hotels.csv", "r");
+    FILE *file = fopen("Hotels.csv", "r");
     FILE *tempFile = fopen("temp_hotels.csv", "w");
     if (file == NULL || tempFile == NULL) {
         error("Unable to open files for deletion");
@@ -1220,7 +1305,7 @@ void deleteHotelFromFile(Hotel *hotel) {
 
     char line[MAX_NAME_LENGTH + MAX_LOCATION_LENGTH + MAX_DATE_LENGTH * 2 + 15];
     char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s,%s,%s,%s,%d,%.2f", hotel->name, hotel->location, hotel->checkInDate, hotel->checkOutDate, hotel->numNights, hotel->costPerNight);
+    sprintf(nameToDelete, "%s,%s,%s,%s", hotel->name, hotel->location, hotel->costPerNight, hotel->distance);
 
     while (fgets(line, sizeof(line), file)) {
         if (strstr(line, nameToDelete) == NULL) {
@@ -1231,57 +1316,65 @@ void deleteHotelFromFile(Hotel *hotel) {
     fclose(file);
     fclose(tempFile);
 
-    remove("hotels.csv");
-    rename("temp_hotels.csv", "hotels.csv");
+    remove("Hotels.csv");
+    rename("temp_hotels.csv", "Hotels.csv");
 }
 
 
 // Function to save hotels to a CSV file
 void saveHotelToFile(Hotel hotels[], int numHotels) {
-    FILE *file = fopen("hotels.csv", "w");
+    FILE *file = fopen("Hotels.csv", "w");
     if (file == NULL) {
         error("Error opening file for writing");
     }
 
     for (int i = 0; i < numHotels; i++) {
-        fprintf(file, "%s,%s,%s,%s,%d,%.2f\n", hotels[i].name, hotels[i].location,
-                hotels[i].checkInDate, hotels[i].checkOutDate, hotels[i].numNights, hotels[i].costPerNight);
+        fprintf(file, "%s,%s,%s,%s\n", hotels[i].name, hotels[i].location,
+                  hotels[i].costPerNight, hotels[i].distance);
     }
 
     fclose(file);
 }
 
 // Function to view hotels from a CSV file
-void viewHotelFromFile(Hotel hotels[], int numHotels) {
-    FILE *file = fopen("hotels.csv", "r");
+void viewHotelFromFile() {
+    FILE *file = fopen("Hotels.csv", "r");
     if (file == NULL) {
-        error("No hotels found in the database");
+        printf("No hotels found in the database\n");
         return;
     }
 
     printf("List of Hotels:\n");
-    printf("%-20s%-20s%-15s%-15s%-10s%-10s\n", "Name", "Location", "Check-in Date", "Check-out Date", "Nights", "Cost/Night");
-    printf("-----------------------------------------------------------------\n");
-    while (fscanf(file, "%[^,],%[^,],%[^,],%[^,],%d,%f\n", hotels[numHotels].name, hotels[numHotels].location,
-                  hotels[numHotels].checkInDate, hotels[numHotels].checkOutDate, &hotels[numHotels].numNights, &hotels[numHotels].costPerNight) != EOF) {
-        printf("%-20s%-20s%-15s%-15s%-10d%-10.2f\n", hotels[numHotels].name, hotels[numHotels].location,
-               hotels[numHotels].checkInDate, hotels[numHotels].checkOutDate, hotels[numHotels].numNights, hotels[numHotels].costPerNight);
+    printf("--------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("| %-20s | %-40s | %-15s | %-40s |\n", "City", "Hotel Name", "Cost/Night", "Distance from City Center");
+    printf("--------------------------------------------------------------------------------------------------------------------------------\n");
+
+    int numHotels = 0;
+    Hotel hotels[MAX_HOTELS];
+
+    while (fscanf(file, "%[^,],%[^,],%[^,],%[^\n]\n", hotels[numHotels].location, hotels[numHotels].name,
+                  hotels[numHotels].costPerNight, hotels[numHotels].distance) == 4) {
+        printf("| %-20s | %-40s | %-15s | %-40s |\n", hotels[numHotels].location, hotels[numHotels].name,
+               hotels[numHotels].costPerNight, hotels[numHotels].distance);
         numHotels++;
     }
-
+    printf("--------------------------------------------------------------------------------------------------------------------------------\n");
     fclose(file);
 }
 
+
+
+
 // Function to load hotels from a CSV file
 void loadHotelFromFile(Hotel hotels[], int *numHotels) {
-    FILE *file = fopen("hotels.csv", "r");
+    FILE *file = fopen("Hotels.csv", "r");
     if (file == NULL) {
-        error("No hotels found in the database");
+        printf("No hotels found in the database\n");
         return;
     }
 
-    while (fscanf(file, "%[^,],%[^,],%[^,],%[^,],%d,%f\n", hotels[*numHotels].name, hotels[*numHotels].location,
-                  hotels[*numHotels].checkInDate, hotels[*numHotels].checkOutDate, &hotels[*numHotels].numNights, &hotels[*numHotels].costPerNight) != EOF) {
+    while (fscanf(file, "%[^,],%[^,],%[^,],%[^\n]\n", hotels[*numHotels].location, hotels[*numHotels].name,
+                  hotels[*numHotels].costPerNight, hotels[*numHotels].distance) == 4) {
         (*numHotels)++;
     }
 
@@ -1458,395 +1551,177 @@ void providePackageFeedback(Package packages[], int numPackages, const char *fil
 }
 
 
-
-
 int main() {
     // Initialize variables
-    int choice;
     char username[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH];
-    UserRole role;
-    Flight flights[MAX_FLIGHTS]; // Declare an array to store flights
-    int numFlights = 0; // Variable to keep track of the number of flights
-    Hotel hotels[MAX_HOTELS]; // Declare an array to store hotels
-    int numHotels = 0; // Variable to keep track of the number of hotels
-    Package packages[MAX_PACKAGES]; // Declare an array to store packages
-    int numPackages = 0; // Variable to keep track of the number of packages
-    Destination destinations[MAX_DESTINATIONS]; // Declare an array to store destinations
-    int numDestinations = 0; // Variable to keep track of the number of destinations
-    Booking booking; // Assuming Booking is a struct type defined somewhere in your code
-    int numPeople;
-    char bookingDate[MAX_DATE_LENGTH]; // Assuming MAX_DATE_LENGTH is defined somewhere in your code
+    UserRole role = INVALID; // Initialize role as invalid
 
-
-
-    // Authenticate user
-    printf("Welcome to the Travel Management System\n");
-    printf("Please login to continue.\n");
-    printf("Username: ");
-    fgets(username, sizeof(username), stdin);
-    username[strcspn(username, "\n")] = '\0'; // Remove trailing newline
-    printf("Password: ");
-    fgets(password, sizeof(password), stdin);
-    password[strcspn(password, "\n")] = '\0'; // Remove trailing newline
-
-    // Authenticate user based on username and password
-    if (authenticateUser(username, password)) {
-        // If authentication successful, assign role
-        if (strcmp(username, "admin") == 0) {
-            role = ADMIN;
-            printf("Welcome Admin!\n");
-        } else {
-            role = USER;
-            printf("Welcome User!\n");
-        }
-    } else {
-        printf("Authentication failed. Exiting...\n");
-        exit(1);
-    }
-
-    // User Interface
-    while (1) {
-        // Display options based on role
-        if (role == ADMIN) {
-            printf("\nAdmin Menu:\n");
-            printf("1. Manage Flights\n");
-            printf("2. Manage Hotels\n");
-            printf("3. Manage Packages\n");
-            printf("4. Manage Destinations\n");
-            printf("5. Exit\n");
-        } else if (role == USER) {
-            printf("\nUser Menu:\n");
-            printf("1. View Flights\n");
-            printf("2. View Hotels\n");
-            printf("3. View Packages\n");
-            printf("4. View Destinations\n");
-            printf("5. Book Flight/Hotel/Package\n");
-            printf("6. Provide Feedback\n");
-            printf("7. Exit\n");
-        }
-
-        // Get user choice
+    while (role == INVALID) {
+        printf("Welcome to the Travel Management System\n");
+        printf("Please login or signup to continue.\n");
+        printf("1. Login\n");
+        printf("2. Signup\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+
+        int loginChoice;
+        scanf("%d", &loginChoice);
         getchar(); // Consume newline character
 
-        // Perform actions based on choice
-        switch (choice) {
+        switch (loginChoice) {
             case 1:
-                if (role == ADMIN) {
-                    int adminChoice;
-                    printf("\nAdmin Flight Management Menu:\n");
-                    printf("1. Add Flight\n");
-                    printf("2. Delete Flight\n");
-                    printf("3. View Flights\n");
-                    printf("4. Exit\n");
-            
-                    // Get admin's choice for flight management
-                    printf("Enter your choice: ");
-                    scanf("%d", &adminChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (adminChoice) {
-                        case 1:
-                            // Add new flight
-                            addFlight(flights, &numFlights);
-                            saveFlightsToFile(flights, numFlights); // Save flights to file after addition
-                            break;
-                        case 2:
-                            // Delete flight
-                            deleteFlight(flights, &numFlights);
-                            saveFlightsToFile(flights, numFlights); // Save flights to file after deletion
-                            break;
-                        case 3:
-                            // View flights
-                            viewFlightsFromFile(flights, numFlights);
-                            break;
-                        case 4:
-                            printf("Exiting Admin Flight Management...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                } else if (role == USER) {
-                    printf("\nView Flights Menu:\n");
-                    printf("1. View All Flights\n");
-                    printf("2. Exit\n");
-            
-                    int userChoice;
-                    printf("Enter your choice: ");
-                    scanf("%d", &userChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (userChoice) {
-                        case 1:
-                            // View all flights
-                            viewFlightsFromFile(flights, numFlights);
-                            break;
-                        case 2:
-                            printf("Exiting View Flights Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
+                // Login
+                printf("Username: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = '\0'; // Remove trailing newline
+                printf("Password: ");
+                fgets(password, sizeof(password), stdin);
+                password[strcspn(password, "\n")] = '\0'; // Remove trailing newline
+
+                role = authenticateUser(username, password);
+                if (role != INVALID) {
+                    printf("Welcome %s!\n", (role == ADMIN) ? "Admin" : "User");
+                } else {
+                    printf("Authentication failed.\n");
                 }
                 break;
-
             case 2:
-                if (role == ADMIN) {
-                    int adminHotelChoice;
-                    printf("\nAdmin Hotel Management Menu:\n");
-                    printf("1. Add Hotel\n");
-                    printf("2. Delete Hotel\n");
-                    printf("3. View Hotels\n");
-                    printf("4. Exit\n");
-            
-                    // Get admin's choice for hotel management
-                    printf("Enter your choice: ");
-                    scanf("%d", &adminHotelChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (adminHotelChoice) {
-                        case 1:
-                            // Add new hotel
-                            addHotel(hotels, &numHotels);
-                            saveHotelToFile(hotels, numHotels); // Save hotels to file after addition
-                            break;
-                        case 2:
-                            // Delete hotel
-                            deleteHotel(hotels, &numHotels);
-                            saveHotelToFile(hotels, numHotels); // Save hotels to file after deletion
-                            break;
-                        case 3:
-                            // View hotels
-                            viewHotelFromFile(hotels, numHotels);
-                            break;
-                        case 4:
-                            printf("Exiting Admin Hotel Management...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                } else if (role == USER) {
-                    printf("\nView Hotels Menu:\n");
-                    printf("1. View All Hotels\n");
-                    printf("2. Exit\n");
-            
-                    int userHotelChoice;
-                    printf("Enter your choice: ");
-                    scanf("%d", &userHotelChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (userHotelChoice) {
-                        case 1:
-                            // View all hotels
-                            viewHotelFromFile(hotels, numHotels);
-                            break;
-                        case 2:
-                            printf("Exiting View Hotels Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                }
+                // Signup
+                signup();
                 break;
-
-            case 3:
-                if (role == ADMIN) {
-                    int adminPackageChoice;
-                    printf("\nAdmin Package Management Menu:\n");
-                    printf("1. Add Package\n");
-                    printf("2. Delete Package\n");
-                    printf("3. View Packages\n");
-                    printf("4. Exit\n");
-            
-                    // Get admin's choice for package management
-                    printf("Enter your choice: ");
-                    scanf("%d", &adminPackageChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (adminPackageChoice) {
-                        case 1:
-                            // Add new package
-                            addPackage(packages, &numPackages);
-                            savePackagesToFile(packages, numPackages); // Save packages to file after addition
-                            break;
-                        case 2:
-                            // Delete package
-                            deletePackage(packages, &numPackages);
-                            savePackagesToFile(packages, numPackages); // Save packages to file after deletion
-                            break;
-                        case 3:
-                            // View packages
-                            viewPackagesFromFile(packages, numPackages);
-                            break;
-                        case 4:
-                            printf("Exiting Admin Package Management...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                } else if (role == USER) {
-                    printf("\nView Packages Menu:\n");
-                    printf("1. View All Packages\n");
-                    printf("2. Exit\n");
-            
-                    int userPackageChoice;
-                    printf("Enter your choice: ");
-                    scanf("%d", &userPackageChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (userPackageChoice) {
-                        case 1:
-                            // View all packages
-                            viewPackagesFromFile(packages, numPackages);
-                            break;
-                        case 2:
-                            printf("Exiting View Packages Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                }
-                break;
-
-            case 4:
-                if (role == ADMIN) {
-                    int adminDestinationChoice;
-                    printf("\nAdmin Destination Management Menu:\n");
-                    printf("1. Add Destination\n");
-                    printf("2. Delete Destination\n");
-                    printf("3. View Destinations\n");
-                    printf("4. Exit\n");
-            
-                    // Get admin's choice for destination management
-                    printf("Enter your choice: ");
-                    scanf("%d", &adminDestinationChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (adminDestinationChoice) {
-                        case 1:
-                            // Add new destination
-                            addDestinationFromUser(destinations); 
-                            break;
-                        case 2:
-                            // Delete destination
-                            deleteDestinationFromUser(destinations);
-                            break;
-                        case 3:
-                            // View destinations
-                            viewDestinationsFromFile();
-                            break;
-                        case 4:
-                            printf("Exiting Admin Destination Management...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                } else if (role == USER) {
-                    printf("\nView Destinations Menu:\n");
-                    printf("1. View All Destinations\n");
-                    printf("2. Exit\n");
-            
-                    int userDestinationChoice;
-                    printf("Enter your choice: ");
-                    scanf("%d", &userDestinationChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (userDestinationChoice) {
-                        case 1:
-                            // View all destinations
-                            viewDestinationsFromFile();
-                            break;
-                        case 2:
-                            printf("Exiting View Destinations Menu...\n");
-                            break;
-                        default:
-                            printf("Invalid choice. Please try again.\n");
-                    }
-                }
-                break;
-
-            case 5:
-                if (role == USER) {
-                    int userBookingChoice;
-                    printf("\nBooking Menu:\n");
-                    printf("1. Book a Flight\n");
-                    printf("2. Book a Hotel\n");
-                    printf("3. Book a Package\n");
-                    printf("4. Exit\n");
-            
-                    printf("Enter your choice: ");
-                    scanf("%d", &userBookingChoice);
-                    getchar(); // Consume newline character
-            
-                    switch (userBookingChoice) {
-                      case 1:
-                          // Book a flight
-                          bookFlight(flights, numFlights, &booking, numPeople, bookingDate);
-                          break;
-                      case 2:
-                          // Book a hotel
-                          bookHotel(hotels, numHotels, &booking, numPeople, bookingDate);
-                          break;
-                      case 3:
-                          // Book a package
-                          bookPackage(packages, numPackages, &booking, numPeople, bookingDate);
-                          break;
-                      case 4:
-                          printf("Exiting Booking Menu...\n");
-                          break;
-                      default:
-                          printf("Invalid choice. Please try again.\n");
-                  }
-                  break;
-
-
-
-            case 6:
-                if (role == USER) {
-                    int userFeedbackChoice;
-                    printf("\nFeedback Menu:\n");
-                    printf("1. Provide Feedback for a Flight\n");
-                    printf("2. Provide Feedback for a Hotel\n");
-                    printf("3. Provide Feedback for a Package\n");
-                    printf("4. Exit\n");
-
-                    printf("Enter your choice: ");
-                    scanf("%d", &userFeedbackChoice);
-                    getchar(); // Consume newline character
-
-                    switch (userFeedbackChoice) {
-                      case 1:
-                          // Provide feedback for a flight
-                          provideFlightFeedback(flights, numFlights, "flight_feedback.txt");
-                          break;
-                      case 2:
-                          // Provide feedback for a hotel
-                          provideHotelFeedback(hotels, numHotels, "hotel_feedback.txt");
-                          break;
-                      case 3:
-                          // Provide feedback for a package
-                          providePackageFeedback(packages, numPackages, "package_feedback.txt");
-                          break;
-                      case 4:
-                          printf("Exiting Feedback Menu...\n");
-                          break;
-                      default:
-                          printf("Invalid choice. Please try again.\n");
-                  }
-                }
-                break;
-
-
-            case 7:
-                printf("Exiting...\n");
-                exit(0);
             default:
-                printf("Invalid choice. Please try again.\n");
+                printf("Invalid choice.\n");
+                break;
         }
+    }
+
+    if (role == USER) {
+        // User functionalities
+        int choice;
+        do {
+            printf("\nUser Menu:\n");
+            printf("1. View Destinations\n");
+            printf("2. View Packages\n");
+            printf("3. View Hotels\n");
+            printf("4. View Flights\n");
+            printf("5. Book Flight or Hotel\n");
+            printf("6. Provide Feedback\n");
+            printf("7. View User Details\n");
+            printf("8. Logout\n");
+            printf("Enter your choice: ");
+            scanf("%d", &choice);
+
+            switch (choice) {
+                case 1:
+                    viewDestinations();
+                    break;
+                case 2:
+                    viewPackages();
+                    break;
+                case 3:
+                    viewHotels();
+                    break;
+                case 4:
+                    viewFlights();
+                    break;
+                case 5:
+                    bookFlightOrHotel(username);
+                    break;
+                case 6:
+                    provideFeedback(username);
+                    break;
+                case 7:
+                    viewUserDetails(username);
+                    break;
+                case 8:
+                    printf("Logging out...\n");
+                    break;
+                default:
+                    printf("Invalid choice.\n");
+                    break;
+            }
+        } while (choice != 8);
+    } else if (role == ADMIN) {
+        // Admin functionalities
+        int choice;
+        do {
+            printf("\nAdmin Menu:\n");
+            printf("1. Add Destination\n");
+            printf("2. View Destinations\n");
+            printf("3. Delete Destination\n");
+            printf("4. Add Flight\n");
+            printf("5. View Flights\n");
+            printf("6. Delete Flight\n");
+            printf("7. Add Hotel\n");
+            printf("8. View Hotels\n");
+            printf("9. Delete Hotel\n");
+            printf("10. Add Package\n");
+            printf("11. View Packages\n");
+            printf("12. Delete Package\n");
+            printf("13. View and Modify Login Credentials\n");
+            printf("14. View Feedbacks\n");
+            printf("15. View Bookings\n");
+            printf("16. Logout\n");
+            printf("Enter your choice: ");
+            scanf("%d", &choice);
+
+            switch (choice) {
+                case 1:
+                    addDestination();
+                    break;
+                case 2:
+                    viewDestinations();
+                    break;
+                case 3:
+                    deleteDestination();
+                    break;
+                case 4:
+                    addFlight();
+                    break;
+                case 5:
+                    viewFlights();
+                    break;
+                case 6:
+                    deleteFlight();
+                    break;
+                case 7:
+                    addHotel();
+                    break;
+                case 8:
+                    viewHotels();
+                    break;
+                case 9:
+                    deleteHotel();
+                    break;
+                case 10:
+                    addPackage();
+                    break;
+                case 11:
+                    viewPackages();
+                    break;
+                case 12:
+                    deletePackage();
+                    break;
+                case 13:
+                    viewAndModifyCredentials();
+                    break;
+                case 14:
+                    viewFeedbacks();
+                    break;
+                case 15:
+                    viewBookings();
+                    break;
+                case 16:
+                    printf("Logging out...\n");
+                    break;
+                default:
+                    printf("Invalid choice.\n");
+                    break;
+            }
+        } while (choice != 16);
     }
 
     return 0;
-  }
 }
+
+
