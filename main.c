@@ -108,13 +108,14 @@ typedef struct {
 } Package;
 
 typedef struct {
+    char city[MAX_NAME_LENGTH];
     char airline[MAX_NAME_LENGTH];
     char flightNumber[MAX_NAME_LENGTH];
     char departure[MAX_LOCATION_LENGTH];
     char arrival[MAX_LOCATION_LENGTH];
     char departureTime[MAX_DATE_LENGTH];
     char arrivalTime[MAX_DATE_LENGTH];
-    float cost;
+    char cost[MAX_CPN_LENGTH];
 } Flight;
 
 typedef struct {
@@ -1018,6 +1019,9 @@ void loadPackagesFromFile(Package packages[], int *numPackages) {
 void addFlight(Flight flights[], int *numFlights) {
     if (*numFlights < MAX_FLIGHTS) {
         Flight newFlight;
+        printf("Enter city: ");
+        fgets(newFlight.city, sizeof(newFlight.city), stdin);
+        newFlight.city[strcspn(newFlight.city, "\n")] = '\0';
         printf("Enter airline: ");
         fgets(newFlight.airline, sizeof(newFlight.airline), stdin);
         newFlight.airline[strcspn(newFlight.airline, "\n")] = '\0'; // Remove trailing newline
@@ -1037,8 +1041,8 @@ void addFlight(Flight flights[], int *numFlights) {
         fgets(newFlight.arrivalTime, sizeof(newFlight.arrivalTime), stdin);
         newFlight.arrivalTime[strcspn(newFlight.arrivalTime, "\n")] = '\0'; // Remove trailing newline
         printf("Enter cost: ");
-        scanf("%f", &newFlight.cost);
-        clearInputBuffer();
+        fgets(newFlight.city, sizeof(newFlight.city), stdin);
+        newFlight.city[strcspn(newFlight.city, "\n")] = '\0';
 
         flights[*numFlights] = newFlight;
         (*numFlights)++;
@@ -1070,6 +1074,9 @@ void deleteFlight(Flight flights[], int *numFlights) {
 
 // Function to add a new flight (for admin) to a CSV file
 void addFlightToFile(Flight *flight) {
+    printf("Enter city: ");
+    fgets(flight->city, sizeof(flight->city), stdin);
+    flight->city[strcspn(flight->city, "\n")] = '\0';
     printf("Enter airline: ");
     fgets(flight->airline, sizeof(flight->airline), stdin);
     flight->airline[strcspn(flight->airline, "\n")] = '\0'; // Remove trailing newline
@@ -1089,14 +1096,14 @@ void addFlightToFile(Flight *flight) {
     fgets(flight->arrivalTime, sizeof(flight->arrivalTime), stdin);
     flight->arrivalTime[strcspn(flight->arrivalTime, "\n")] = '\0'; // Remove trailing newline
     printf("Enter cost: ");
-    scanf("%f", &flight->cost);
-    clearInputBuffer();
+    fgets(flight->cost, sizeof(flight->cost), stdin);
+    flight->cost[strcspn(flight->cost, "\n")] = '\0'; 
 
-    FILE *file = fopen("flights.csv", "a");
+    FILE *file = fopen("Flights.csv", "a");
     if (file == NULL) {
         error("Unable to open file for writing");
     }
-    fprintf(file, "%s,%s,%s,%s,%s,%s,%.2f\n", flight->airline, flight->flightNumber, flight->departure,
+    fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s\n", flight->city, flight->airline, flight->flightNumber, flight->departure,
             flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
     fclose(file);
 }
@@ -1105,7 +1112,7 @@ void addFlightToFile(Flight *flight) {
 void deleteFlightFromFile(Flight *flight) {
     printf("Flight %s %s deleted successfully.\n", flight->airline, flight->flightNumber);
 
-    FILE *file = fopen("flights.csv", "r");
+    FILE *file = fopen("Flights.csv", "r");
     FILE *tempFile = fopen("temp_flights.csv", "w");
     if (file == NULL || tempFile == NULL) {
         error("Unable to open files for deletion");
@@ -1113,7 +1120,7 @@ void deleteFlightFromFile(Flight *flight) {
 
     char line[MAX_NAME_LENGTH + MAX_NAME_LENGTH + MAX_LOCATION_LENGTH * 2 + MAX_DATE_LENGTH * 2 + 20];
     char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s,%s,%s,%s,%s,%s,%.2f", flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
+    sprintf(nameToDelete, "%s,%s,%s,%s,%s,%s,%s,%s", flight->city, flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
 
     while (fgets(line, sizeof(line), file)) {
         if (strstr(line, nameToDelete) == NULL) {
@@ -1124,21 +1131,21 @@ void deleteFlightFromFile(Flight *flight) {
     fclose(file);
     fclose(tempFile);
 
-    remove("flights.csv");
-    rename("temp_flights.csv", "flights.csv");
+    remove("Flights.csv");
+    rename("temp_flights.csv", "Flights.csv");
 }
 
 
 // Function to save flights to a CSV file
 void saveFlightsToFile(Flight flights[], int numFlights) {
-    FILE *file = fopen("flights.csv", "w");
+    FILE *file = fopen("Flights.csv", "w");
     if (file == NULL) {
         printf("Error opening file!\n");
         exit(1);
     }
 
     for (int i = 0; i < numFlights; i++) {
-        fprintf(file, "%s,%s,%s,%s,%s,%s,%.2f\n", flights[i].airline, flights[i].flightNumber,
+        fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s\n", flights[i].city, flights[i].airline, flights[i].flightNumber,
                 flights[i].departure, flights[i].arrival, flights[i].departureTime,
                 flights[i].arrivalTime, flights[i].cost);
     }
@@ -1148,81 +1155,61 @@ void saveFlightsToFile(Flight flights[], int numFlights) {
 
 // Function to view flights from a CSV file
 void viewFlightsFromFile(Flight flights[], int numFlights) {
-    FILE *file = fopen("flights.csv", "r");
+    FILE *file = fopen("Flights.csv", "r");
     if (file == NULL) {
         printf("No flights found in the database.\n");
         return;
     }
 
-    char line[MAX_CSV_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
-        char *token;
-        int i = 0;
+    // Read and discard the first line (header) of the CSV file
+    char header[MAX_CSV_LINE_LENGTH];
+    if (fgets(header, sizeof(header), file) == NULL) {
+        fclose(file);
+        printf("Failed to read the header from the file.\n");
+        return;
+    }
 
-        token = strtok(line, ",");
-        strcpy(flights[numFlights].airline, token);
+    printf("List of Flights:\n");
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("| %-35s | %-12s | %-15s | %-10s | %-8s | %-15s | %-15s | %-6s|\n", "City", "Airline", "Flight Number", "Departure", "Arrival", "Departure Time", "Arrival Time", "Cost");
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------\n");
 
-        token = strtok(NULL, ",");
-        strcpy(flights[numFlights].flightNumber, token);
 
-        token = strtok(NULL, ",");
-        strcpy(flights[numFlights].departure, token);
-
-        token = strtok(NULL, ",");
-        strcpy(flights[numFlights].arrival, token);
-
-        token = strtok(NULL, ",");
-        strcpy(flights[numFlights].departureTime, token);
-
-        token = strtok(NULL, ",");
-        strcpy(flights[numFlights].arrivalTime, token);
-
-        token = strtok(NULL, ",");
-        flights[numFlights].cost = atof(token);
-
+    while(fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]\n", flights[numFlights].city, flights[numFlights].airline, flights[numFlights].flightNumber, flights[numFlights].departure, flights[numFlights].arrival, flights[numFlights].departureTime, flights[numFlights].arrivalTime, flights[numFlights].cost)==8){
+        printf("| %-35s | %-12s | %-15s | %-10s | %-8s | %-15s | %-15s | %-6s|\n", flights[numFlights].city, flights[numFlights].airline, flights[numFlights].flightNumber, flights[numFlights].departure, flights[numFlights].arrival, flights[numFlights].departureTime, flights[numFlights].arrivalTime, flights[numFlights].cost);
+    
         numFlights++;
     }
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------\n");
 
     fclose(file);
 
-    if (numFlights > 0) {
-        printf("List of Flights:\n");
-        for (int i = 0; i < numFlights; i++) {
-            printf("\nFlight %d:\n", i + 1);
-            printf("Airline: %s\n", flights[i].airline);
-            printf("Flight Number: %s\n", flights[i].flightNumber);
-            printf("Departure: %s\n", flights[i].departure);
-            printf("Arrival: %s\n", flights[i].arrival);
-            printf("Departure Time: %s\n", flights[i].departureTime);
-            printf("Arrival Time: %s\n", flights[i].arrivalTime);
-            printf("Cost: %.2f\n", flights[i].cost);
-        }
-    } else {
+    if (numFlights == 0) {
         printf("No flights to display.\n");
     }
 }
 
+
 // Function to load flights from a CSV file
 void loadFlightsFromFile(Flight flights[], int *numFlights) {
-    FILE *file = fopen("flights.csv", "r");
+    FILE *file = fopen("Flights.csv", "r");
     if (file == NULL) {
         printf("No flights found in the database.\n");
         return;
     }
 
     while (!feof(file)) {
-        fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%f\n",
-               flights[*numFlights].airline, flights[*numFlights].flightNumber,
+        fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,]\n",
+               flights[*numFlights].city, flights[*numFlights].airline, flights[*numFlights].flightNumber,
                flights[*numFlights].departure, flights[*numFlights].arrival,
                flights[*numFlights].departureTime, flights[*numFlights].arrivalTime,
-               &flights[*numFlights].cost);
+               flights[*numFlights].cost);
 
         (*numFlights)++;
     }
 
     fclose(file);
 }
-
 
 void addHotel(Hotel hotels[], int *numHotels) {
     if (*numHotels < MAX_HOTELS) {
