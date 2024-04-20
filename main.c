@@ -1689,10 +1689,11 @@ int main() {
             scanf("%d", &choice);
 
             switch (choice) {
+                /*
                 case 1:
                     viewAllDestinations();
                     break;
-                /*
+                
                 case 2:
                     viewPackages();
                     break;
@@ -1746,14 +1747,16 @@ int main() {
 
             switch (choice) {
                 case 1:
+                     Destination destinations;
                      printf("\n--- Add a Destination ---\n");
-   		             addDestinationFromUser(&destination);
-    		         printf("Destination '%s' added successfully.\n", destination.name);
+   		             addDestinationFromUser(&destinations);
+    		         printf("Destination '%s' added successfully.\n", destinations.name);
                      break;
+                /*
                 case 2:
                     viewAllDestinations();
                     break;
-                /*
+                
                 case 3:
                     deleteDestination();
                     break;
@@ -1794,7 +1797,7 @@ int main() {
                     viewAndModifyCredentials();
                     break;*/
                 case 14:
-                    viewFeedbacks()
+                    viewFeedbacks();
                     break;
                 /*case 15:
                     viewBookings();
@@ -1811,5 +1814,4 @@ int main() {
 
     return 0;
 }
-
 
