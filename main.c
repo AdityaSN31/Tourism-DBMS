@@ -37,6 +37,7 @@
 #define MAX_DISTANCECC_LENGTH 50
 #define MAX_CPN_LENGTH 50
 #define MAX_TEXT_LENGTH 50
+#define MAX_INPUT_LENGTH 100
 #define MAX_BEST_TIME_TO_VISIT 50
 #define MAX_FIELDS 5 // We have 5 fields in our CSV: Name, Description, Location, Places to Visit, Best Time to Visit
 
@@ -1437,6 +1438,7 @@ void bookPackage(Package packages[], int numPackages, Booking *booking, int numP
     }
 }
 
+/*
 // Function to save feedback to file
 void saveFeedbackToFile(const char *fileName, Feedback feedback) {
     FILE *file = fopen(fileName, "a");
@@ -1516,6 +1518,7 @@ void providePackageFeedback(Package packages[], int numPackages, const char *fil
         provideFeedback(PACKAGE, &packages[i], comment, rating);
     }
 }
+*/
 
 // Function to check if the user has already submitted feedback
 int hasSubmittedFeedback(const char *username) {
