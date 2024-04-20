@@ -1337,10 +1337,18 @@ void saveHotelToFile(Hotel hotels[], int numHotels) {
 }
 
 // Function to view hotels from a CSV file
-void viewHotelFromFile() {
+void viewHotelFromFile(Hotel hotels[], int numHotels) {
     FILE *file = fopen("Hotels.csv", "r");
     if (file == NULL) {
         printf("No hotels found in the database\n");
+        return;
+    }
+
+    // Read and discard the first line (header) of the CSV file
+    char header[100];
+    if (fgets(header, sizeof(header), file) == NULL) {
+        fclose(file);
+        printf("Failed to read the header from the file\n");
         return;
     }
 
@@ -1348,9 +1356,6 @@ void viewHotelFromFile() {
     printf("--------------------------------------------------------------------------------------------------------------------------------\n");
     printf("| %-20s | %-40s | %-15s | %-40s |\n", "City", "Hotel Name", "Cost/Night", "Distance from City Center");
     printf("--------------------------------------------------------------------------------------------------------------------------------\n");
-
-    int numHotels = 0;
-    Hotel hotels[MAX_HOTELS];
 
     while (fscanf(file, "%[^,],%[^,],%[^,],%[^\n]\n", hotels[numHotels].location, hotels[numHotels].name,
                   hotels[numHotels].costPerNight, hotels[numHotels].distance) == 4) {
@@ -1361,8 +1366,6 @@ void viewHotelFromFile() {
     printf("--------------------------------------------------------------------------------------------------------------------------------\n");
     fclose(file);
 }
-
-
 
 
 // Function to load hotels from a CSV file
