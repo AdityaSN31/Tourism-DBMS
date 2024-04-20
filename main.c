@@ -711,7 +711,7 @@ void deleteDestinationFromFile(const char *destinationName) {
 }
 
 // Function to view all destinations in the CSV file
-void viewDestinationsFromFile() {
+void viewAllDestinations() {
     // Open the destinations CSV file for reading
     FILE *file = fopen("destinations.csv", "r");
     if (file == NULL) {
@@ -893,7 +893,7 @@ void deletePackageFromFile(int index) {
 }
 
 // Function to view packages from a CSV file
-void viewPackagesFromFile(Package packages[], int numPackages) {
+void viewAllPackages(Package packages[], int numPackages) {
     FILE *file = fopen("packages.csv", "r");
     if (file == NULL) {
         printf("No packages found in the database.\n");
@@ -1154,7 +1154,7 @@ void saveFlightsToFile(Flight flights[], int numFlights) {
 }
 
 // Function to view flights from a CSV file
-void viewFlightsFromFile(Flight flights[], int numFlights) {
+void viewallFlights(Flight flights[], int numFlights) {
     FILE *file = fopen("Flights.csv", "r");
     if (file == NULL) {
         printf("No flights found in the database.\n");
@@ -1324,7 +1324,7 @@ void saveHotelToFile(Hotel hotels[], int numHotels) {
 }
 
 // Function to view hotels from a CSV file
-void viewHotelFromFile(Hotel hotels[], int numHotels) {
+void viewAllHotels(Hotel hotels[], int numHotels) {
     FILE *file = fopen("Hotels.csv", "r");
     if (file == NULL) {
         printf("No hotels found in the database\n");
@@ -1660,7 +1660,7 @@ int main() {
                     addDestination();
                     break;
                 case 2:
-                    viewDestinations();
+                    viewAllDestinations();
                     break;
                 case 3:
                     deleteDestination();
@@ -1669,7 +1669,7 @@ int main() {
                     addFlight();
                     break;
                 case 5:
-                    viewFlights();
+                    viewAllFlights();
                     break;
                 case 6:
                     deleteFlight();
@@ -1678,7 +1678,7 @@ int main() {
                     addHotel();
                     break;
                 case 8:
-                    viewHotels();
+                    viewAllHotels();
                     break;
                 case 9:
                     deleteHotel();
@@ -1687,7 +1687,7 @@ int main() {
                     addPackage();
                     break;
                 case 11:
-                    viewPackages();
+                    viewAllPackages();
                     break;
                 case 12:
                     deletePackage();
