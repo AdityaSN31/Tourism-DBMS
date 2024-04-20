@@ -727,39 +727,38 @@ void deleteDestinationFromFile(const char *destinationName) {
 
 void removeQuotationMarks(char *str);
 
-void viewAllDestinations(const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
+void viewAllDestinations(Destination destinations[], int numDestinations) {
+    FILE *file = fopen("Destination.csv", "r");
+    if (file == NULL) {
+        printf("No destinations found in the database.\n");
         return;
     }
 
-    char line[256];
-    printf("Destinations:\n");
-    printf("--------------------------------------------------------------------------------------------------------\n");
-    printf("Name                 | Description                                       | Location          | Places to Visit                                    | Best Time to Visit\n");
-    printf("--------------------------------------------------------------------------------------------------------\n");
-
-    while (fgets(line, sizeof(line), file)) {
-        // Break the line into different fields based on delimiters (assuming CSV)
-        char *name = strtok(line, ",");
-        char *description = strtok(NULL, ",");
-        char *location = strtok(NULL, ",");
-        char *placesToVisit = strtok(NULL, ",");
-        char *bestTime = strtok(NULL, ",");
-
-        // Remove quotation marks from the parsed fields
-        if (name) removeQuotationMarks(name);
-        if (description) removeQuotationMarks(description);
-        if (location) removeQuotationMarks(location);
-        if (placesToVisit) removeQuotationMarks(placesToVisit);
-        if (bestTime) removeQuotationMarks(bestTime);
-
-        // Output the formatted data
-        printf("%-20s | %-50s | %-20s | %-50s | %-20s\n", name, description, location, placesToVisit, bestTime);
+    // Read and discard the first line (header) of the CSV file
+    char header[MAX_CSV_LINE_LENGTH];
+    if (fgets(header, sizeof(header), file) == NULL) {
+        fclose(file);
+        printf("Failed to read the header from the file.\n");
+        return;
     }
 
+    printf("List of Destinations:\n");
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("| %-20s | %-100s | %-20s | %-90s | %-20s |\n", "Name", "Description", "Location", "Places to Visit", "Best Time to Visit");
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    while (fscanf(file, "%[^,],%[^,],%[^,],%[^,],%[^\n]\n", destinations[numDestinations].name, destinations[numDestinations].description, destinations[numDestinations].location, destinations[numDestinations].placesToVisit, destinations[numDestinations].bestTimeToVisit) == 5) {
+        printf("| %-20s | %-100s | %-20s | %-90s | %-20s |\n", destinations[numDestinations].name, destinations[numDestinations].description, destinations[numDestinations].location, destinations[numDestinations].placesToVisit, destinations[numDestinations].bestTimeToVisit);
+    
+        numDestinations++;
+    }
+    printf(" ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
     fclose(file);
+
+    if (numDestinations == 0) {
+        printf("No destinations to display.\n");
+    }
 }
 
 
@@ -1783,11 +1782,13 @@ int main() {
    		             addDestinationFromUser(&destinations);
     		         printf("Destination '%s' added successfully.\n", destinations.name);
                      break;
-                /*
-                case 2:
-                    viewAllDestinations();
-                    break;
                 
+                case 2:
+                    Destination destination[MAX_DESTINATIONS];
+                    int numDestinations = 0;
+                    viewAllDestinations(destination, numDestinations);
+                    break;
+                /*
                 case 3:
                     deleteDestination();
                     break;
