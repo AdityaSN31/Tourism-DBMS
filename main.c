@@ -1275,27 +1275,58 @@ void deleteHotel(Hotel hotels[], int *numHotels) {
 }
 
 
+// Function to add double quotes if a field contains a comma
+void addDoubleQuotes(char *input) {
+    if (strchr(input, ',') != NULL) {
+        size_t length = strlen(input);
+        // Shift the string to the right to make space for quotes
+        for (int i = length; i >= 0; i--) {
+            input[i + 1] = input[i];
+        }
+        // Add double quotes at the start and end
+        input[0] = '\"';
+        input[length + 1] = '\"';
+        input[length + 2] = '\0';  // Ensure null-termination
+    }
+}
+
 // Function to add a new hotel (for admin)
 void addHotelToFile(Hotel *hotel) {
+    // Read hotel name and apply double quotes if needed
     printf("Enter hotel name: ");
     fgets(hotel->name, sizeof(hotel->name), stdin);
     hotel->name[strcspn(hotel->name, "\n")] = '\0'; // Remove trailing newline
+    addDoubleQuotes(hotel->name);
+
+    // Read location and apply double quotes if needed
     printf("Enter location: ");
     fgets(hotel->location, sizeof(hotel->location), stdin);
     hotel->location[strcspn(hotel->location, "\n")] = '\0'; // Remove trailing newline
+    addDoubleQuotes(hotel->location);
+
+    // Read distance from city center and apply double quotes if needed
     printf("Enter distance from city center: ");
     fgets(hotel->distance, sizeof(hotel->distance), stdin);
     hotel->distance[strcspn(hotel->distance, "\n")] = '\0';
+    addDoubleQuotes(hotel->distance);
+
+    // Read cost per night and apply double quotes if needed
     printf("Enter cost per night: ");
     fgets(hotel->costPerNight, sizeof(hotel->costPerNight), stdin);
     hotel->costPerNight[strcspn(hotel->costPerNight, "\n")] = '\0';
+    addDoubleQuotes(hotel->costPerNight);
 
+    // Open the CSV file for appending
     FILE *file = fopen("Hotels.csv", "a");
     if (file == NULL) {
-        error("Unable to open file for writing");
+        error("Unable to open file for writing.");
+        return;
     }
-    fprintf(file, "%s,%s,%s,%s\n", hotel->name, hotel->location,
-              hotel->costPerNight, hotel->distance);
+
+    // Write to the CSV file with double quotes when needed
+    fprintf(file, "%s,%s,%s,%s\n", hotel->name, hotel->location, hotel->costPerNight, hotel->distance);
+
+    // Properly close the file
     fclose(file);
 }
 
@@ -1771,10 +1802,11 @@ int main() {
                 /*
                 case 6:
                     deleteFlight();
-                    break;
-                case 7:
-                    addHotel();
                     break;*/
+                case 7:
+                    Hotel hotel[MAX_INPUT_LENGTH];
+                    addHotelToFile(hotel);
+                    break;
                 case 8:
                     Hotel hotels[MAX_HOTELS];
                     int numHotels = 0;
