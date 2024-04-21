@@ -30,7 +30,7 @@
 #define MAX_FILE_NAME_LENGTH 50
 #define ROTR(x, n) (((x) >> (n)) | ((x) << (64 - (n))))  // Rotate right (circular right shift) operation
 #define MAX_ROLE_LENGTH 20
-#define MAX_LINE_LENGTH 100 // Adjust this size as needed
+#define MAX_LINE_LENGTH 1024 // Adjust this size as needed
 #define USERS_FILE "User.csv" // Define the filename appropriately
 #define MAX_DISTANCECC_LENGTH 50
 #define MAX_CPN_LENGTH 50
