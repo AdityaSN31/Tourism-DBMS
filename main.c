@@ -929,32 +929,76 @@ void addPackagesFromFile() {
 }
 
 // Function to delete a package from the CSV file
-void deletePackageFromFile(int index) {
-    FILE *file = fopen("packages.csv", "r");
-    FILE *tempFile = fopen("temp_packages.csv", "w");
-    if (file == NULL || tempFile == NULL) {
-        printf("Error opening files for deletion.\n");
+void deletePackageFromFile() {
+    char packageName[MAX_PACKAGE_NAME_LENGTH];
+    printf("Enter the name of the package to delete: ");
+    fgets(packageName, sizeof(packageName), stdin);
+    packageName[strcspn(packageName, "\n")] = '\0'; // Remove newline character
+
+    FILE *file = fopen("Packages.csv", "r");
+    if (file == NULL) {
+        printf("Error opening file.\n");
         return;
     }
 
-    char line[MAX_CSV_LINE_LENGTH];
-    int lineNumber = 0;
-    while (fgets(line, sizeof(line), file)) {
-        lineNumber++;
-        if (lineNumber != index) {
-            fputs(line, tempFile);
+    Package packages[MAX_PACKAGES];
+    char line[MAX_LINE_LENGTH];
+    int numPackages = 0;
+
+    // Read and parse CSV file
+    while (fgets(line, sizeof(line), file) != NULL) {
+        sscanf(line, "%[^,],%[^,],%d,\"%[^\"]\",\"%[^\"]\",\"%[^\"]\",%[^\n]", 
+               packages[numPackages].name, packages[numPackages].region, 
+               &packages[numPackages].duration, packages[numPackages].description,
+               packages[numPackages].itinerary, packages[numPackages].price,
+               packages[numPackages].destinations[0].name);
+        numPackages++;
+    }
+    fclose(file);
+
+    int index = -1;
+    // Search for the package by name
+    for (int i = 0; i < numPackages; i++) {
+        if (strcmp(packages[i].name, packageName) == 0) {
+            index = i;
+            break;
         }
     }
 
+    if (index == -1) {
+        printf("Package not found.\n");
+        return;
+    }
+
+    // Shift elements to overwrite the deleted entry
+    for (int i = index; i < numPackages - 1; i++) {
+        strcpy(packages[i].name, packages[i + 1].name);
+        strcpy(packages[i].region, packages[i + 1].region);
+        packages[i].duration = packages[i + 1].duration;
+        strcpy(packages[i].description, packages[i + 1].description);
+        strcpy(packages[i].itinerary, packages[i + 1].itinerary);
+        strcpy(packages[i].price, packages[i + 1].price);
+        strcpy(packages[i].destinations[0].name, packages[i + 1].destinations[0].name);
+    }
+    numPackages--;
+
+    // Rewrite the file
+    file = fopen("Packages.csv", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    for (int i = 0; i < numPackages; i++) {
+        fprintf(file, "%s,%s,%d,\"%s\",\"%s\",\"%s\",%s\n", 
+                packages[i].name, packages[i].region, packages[i].duration,
+                packages[i].description, packages[i].itinerary, packages[i].price,
+                packages[i].destinations[0].name);
+    }
+
     fclose(file);
-    fclose(tempFile);
-
-    remove("packages.csv");
-    rename("temp_packages.csv", "packages.csv");
-
     printf("Package deleted successfully.\n");
 }
-
 // Function to view packages from a CSV file
 void viewAllPackages(Package packages[], int numPackages) {
     FILE *file = fopen("packages.csv", "r");
@@ -1924,12 +1968,17 @@ int main() {
                 case 11:
                     viewPackages();
                     break;
-                case 12:
-                    deletePackage();
+                */
+                case 12:{
+                    printf("\n\n");
+                    deletePackageFromFile();
                     break;
+                    }
+                /*
                 case 13:
                     viewAndModifyCredentials();
-                    break;*/
+                    break;
+                */
                 case 14:
                     viewFeedbacks();
                     break;
