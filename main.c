@@ -163,6 +163,13 @@ typedef struct {
     char bookingDetail[MAX_DETAIL_LENGTH]; // Additional details, e.g., flight number or hotel name
 } Booking;
 
+typedef struct{
+    int numPeople;
+    char bookingDate[MAX_DATE_LENGTH];
+    char userName[MAX_NAME_LENGTH];
+    char bookingDetail[MAX_DETAIL_LENGTH];
+}booking;
+
 // Enum to represent feedback types
 typedef enum {
     FLIGHT,
@@ -176,56 +183,6 @@ typedef struct {
     char text[MAX_FEEDBACK_LENGTH];
     int rating; // New field for rating out of 5
 } Feedback;
-
-
-/*
-clearInputBuffer(): This function clears the input buffer by reading characters until encountering a newline or EOF.
-error(const char *message): It prints an error message to the standard error stream and exits the program with a failure status.
-validateName(const char *name): This function validates a name string to ensure it's not empty and doesn't exceed the maximum length.
-validateEmail(const char *email): It validates an email string, checking if it's not empty, doesn't exceed the maximum length, contains the '@' symbol, and has at least one dot '.' after the '@' symbol.
-validateMobile(const char *mobile): This function validates a mobile number string to ensure it's not empty and doesn't exceed the maximum length.
-validateDate(const char *date): It validates a date string to ensure it's not empty and doesn't exceed the maximum length.
-generateSalt(char *salt): This function generates a random salt of a specified size.
-computeHash(const char *password, const char *salt, char *hash): It computes the hash of a password concatenated with a salt using the SHA-512 hashing algorithm.
-authenticateUser(const char *username, const char *password): This function performs user authentication by comparing the computed hash of the provided password with the stored hash associated with the username.
-
-addTourist(User *user): Prompts the user to input tourist details (name, email, mobile number) and sets the user's role as "USER".
-deleteTourist(User *user): Prints a message indicating the successful deletion of a tourist. Since the data is not persisted beyond program execution, no further action is taken.
-addTouristFromFile(User *user): Adds a tourist's details to a CSV file, including name, email, mobile number, and role.
-deleteTouristFromFile(User *user): Deletes a tourist's details from the CSV file based on the provided user data.
-
-addDestination(Destination destinations[], int *numDestinations): Allows the user to add a new destination to an array of destinations, including details like name, description, location, and best time to visit.
-deleteDestination(Destination destinations[], int *numDestinations): Deletes a destination from the array of destinations based on the user's input index.
-addDestinationFromUser(Destination *destination): Prompts the user to input destination details and saves them to a CSV file.
-deleteDestinationFromUser(Destination *destination): Deletes a destination from the CSV file based on the provided destination data.
-addDestinationFromFile(Destination destinations[], int *numDestinations): Reads destination data from a CSV file and populates an array of destinations.
-deleteDestinationFromFile(const char *destinationName): Deletes a destination from the CSV file based on the provided destination name.
-viewDestinationsFromFile(): Displays all destinations stored in the CSV file, including their details like name, description, location, places to visit, and best time to visit.
-
-addPackage(Package packages[], int *numPackages): Allows the user to input details for a new package, including name, region, duration, description, itinerary, price, and destinations. The package is added to an array of packages.
-deletePackage(Package packages[], int *numPackages): Deletes a package from the array of packages based on the user's input index.
-addPackageFromFile(Package packages[], int *numPackages): Prompts the user to input package details and saves them to a CSV file. Destinations associated with the package are also saved.
-deletePackageFromFile(int index): Deletes a package from the CSV file based on the provided index.
-viewPackagesFromFile(Package packages[], int numPackages): Reads package data from a CSV file and displays it to the user, including details such as name, region, duration, description, itinerary, price, and associated destinations.
-savePackagesToFile(Package packages[], int numPackages): Saves package data from an array of packages to a CSV file, including details and associated destinations.
-loadPackagesFromFile(Package packages[], int *numPackages): Loads package data from a CSV file into an array of packages.
-
-addFlight(Flight flights[], int *numFlights): Allows the user to input details for a new flight, including airline, flight number, departure, arrival, departure time, arrival time, and cost. The flight is then added to an array of flights.
-deleteFlight(Flight flights[], int *numFlights): Deletes a flight from the array of flights based on the user's input index.
-addFlightToFile(Flight *flight): Prompts the user to input flight details and saves them to a CSV file.
-deleteFlightFromFile(Flight *flight): Deletes a flight from the CSV file based on the provided flight details.
-saveFlightsToFile(Flight flights[], int numFlights): Saves flight data from an array of flights to a CSV file.
-viewFlightsFromFile(Flight flights[], int numFlights): Reads flight data from a CSV file and displays it to the user.
-loadFlightsFromFile(Flight flights[], int *numFlights): Loads flight data from a CSV file into an array of flights.
-
-addHotel(Hotel hotels[], int *numHotels): Allows the user to input details for a new hotel, including name, location, check-in date, check-out date, number of nights, and cost per night. The hotel is then added to an array of hotels.
-deleteHotel(Hotel hotels[], int *numHotels): Deletes a hotel from the array of hotels based on the user's input index.
-addHotelToFile(Hotel *hotel): Prompts the user to input hotel details and saves them to a CSV file.
-deleteHotelFromFile(Hotel *hotel): Deletes a hotel from the CSV file based on the provided hotel details.
-saveHotelToFile(Hotel hotels[], int numHotels): Saves hotel data from an array of hotels to a CSV file.
-viewHotelFromFile(Hotel hotels[], int numHotels): Reads hotel data from a CSV file and displays it to the user.
-loadHotelFromFile(Hotel hotels[], int *numHotels): Loads hotel data from a CSV file into an array of hotels.
-*/
 
 // Function to trim leading and trailing whitespace from a string
 char *trim(char *str) {
@@ -672,6 +629,8 @@ void addDestinationFromUser(Destination *destination) {
 
 // Function to delete a destination from user input and update the CSV file
 void deleteDestinationFromUser(Destination *destination) {
+    printf("\nPress enter to continue:");
+    getchar();
     printf("Destination %s deleted successfully.\n", destination->name);
 
     // Open the CSV file for reading
@@ -707,6 +666,8 @@ void deleteDestinationFromUser(Destination *destination) {
 
 //add destinations from file destinations.csv
 void addDestinationFromFile(Destination destinations[], int *numDestinations) {
+    printf("\nPress enter to continue:");
+    getchar();
     FILE *file = fopen("destinations.csv", "r");
     if (file == NULL) {
         error("Unable to open destinations file");
@@ -724,7 +685,7 @@ void addDestinationFromFile(Destination destinations[], int *numDestinations) {
 
 //delete destinations from the file destinations.csv
 void deleteDestinationFromFile() {
-    printf("Press enter to continue:");
+    printf("\nPress enter to continue:");
     getchar();
     char destinationName[MAX_NAME_LENGTH];
     printf("Enter the name of the destination to delete: ");
@@ -1748,88 +1709,6 @@ void bookPackage(Package packages[], int numPackages, Booking *booking, int numP
     }
 }
 
-/*
-// Function to save feedback to file
-void saveFeedbackToFile(const char *fileName, Feedback feedback) {
-    FILE *file = fopen(fileName, "a");
-    if (file == NULL) {
-        printf("Error opening file %s\n", fileName);
-        return;
-    }
-    fprintf(file, "Type: ");
-    switch (feedback.type) {
-        case FLIGHT:
-            fprintf(file, "Flight\n");
-            break;
-        case HOTEL:
-            fprintf(file, "Hotel\n");
-            break;
-        case PACKAGE:
-            fprintf(file, "Package\n");
-            break;
-        default:
-            fprintf(file, "Unknown\n");
-            break;
-    }
-    fprintf(file, "Comment: %s\n", feedback.comment);
-    fprintf(file, "Rating: %d\n", feedback.rating);
-    fprintf(file, "------------------------------------\n");
-    fclose(file);
-}
-
-
-// Function to provide feedback for flights
-void provideFlightFeedback(Flight flights[], int numFlights, const char *fileName) {
-    printf("\nProvide feedback for flights:\n");
-    for (int i = 0; i < numFlights; i++) {
-        printf("Flight %s - %s\n", flights[i].flightNumber, flights[i].airline);
-        char comment[MAX_FEEDBACK_LENGTH];
-        int rating;
-        printf("Enter your comment for this flight: ");
-        fgets(comment, sizeof(comment), stdin);
-        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter your rating (1-5) for this flight: ");
-        scanf("%d", &rating);
-        getchar(); // Consume newline character
-        provideFeedback(FLIGHT, &flights[i], comment, rating);
-    }
-}
-
-// Function to provide feedback for hotels
-void provideHotelFeedback(Hotel hotels[], int numHotels, const char *fileName) {
-    printf("\nProvide feedback for hotels:\n");
-    for (int i = 0; i < numHotels; i++) {
-        printf("-> %s\n", hotels[i].name);
-        char comment[MAX_FEEDBACK_LENGTH];
-        int rating;
-        printf("Enter your comment for this hotel: ");
-        fgets(comment, sizeof(comment), stdin);
-        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter your rating (1-5) for this hotel: ");
-        scanf("%d", &rating);
-        getchar(); // Consume newline character
-        provideFeedback(HOTEL, &hotels[i], comment, rating);
-    }
-}
-
-// Function to provide feedback for packages
-void providePackageFeedback(Package packages[], int numPackages, const char *fileName) {
-    printf("\nProvide feedback for packages:\n");
-    for (int i = 0; i < numPackages; i++) {
-        printf("-> %s\n", packages[i].description);
-        char comment[MAX_FEEDBACK_LENGTH];
-        int rating;
-        printf("Enter your comment for this package: ");
-        fgets(comment, sizeof(comment), stdin);
-        comment[strcspn(comment, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter your rating (1-5) for this package: ");
-        scanf("%d", &rating);
-        getchar(); // Consume newline character
-        provideFeedback(PACKAGE, &packages[i], comment, rating);
-    }
-}
-*/
-
 // Function to check if the user has already submitted feedback
 int hasSubmittedFeedback(const char *username) {
     FILE *file = fopen("Feedbacks.csv", "r");
@@ -2024,6 +1903,39 @@ void handleBooking(const char *userName) {
     printf("Booking created and saved to CSV.\n");
 }
 
+//function to vieww all the bookings(admiin)
+void viewBookings(booking bookings[], int numBookings) {
+    FILE *file = fopen("Booking.csv", "r");
+    if (file == NULL) {
+        printf("No bookings found in the database.\n");
+        return;
+    }
+
+    char header[MAX_CSV_LINE_LENGTH];
+    if (fgets(header, sizeof(header), file) == NULL) {
+        fclose(file);
+        printf("Failed to read the header from the file.\n");
+        return;
+    }
+
+    printf("List of Bookings:\n");
+    printf(" ----------------------------------------------------------------------------------------------\n");
+    printf("| %-18s | %-20s | %-15s | %-30s |\n", "Number of People", "Date", "Name", "Detail");
+    printf(" ----------------------------------------------------------------------------------------------\n");
+
+    while(fscanf(file, "\"%d\",\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"\n", &bookings[numBookings].numPeople, bookings[numBookings].bookingDate, bookings[numBookings].userName, bookings[numBookings].bookingDetail) == 4) {
+        printf("| %-18d | %-20s | %-15s | %-30s |\n", bookings[numBookings].numPeople, bookings[numBookings].bookingDate, bookings[numBookings].userName, bookings[numBookings].bookingDetail);
+    
+        numBookings++;
+    }
+    printf(" ----------------------------------------------------------------------------------------------\n");
+
+    fclose(file);
+
+    if (numBookings == 0) {
+        printf("No bookings to display.\n");
+    }
+}
 
 int main() {
     // Initialize variables
@@ -2113,7 +2025,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2181,7 +2093,7 @@ int main() {
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
     		         printf("--- Destination '%s' added successfully ---\n", destinations.name);
-                     printf("Press enter to continue.");
+                     printf("\nPress enter to continue.");
                      getchar();
                      break;
                     }
@@ -2192,7 +2104,7 @@ int main() {
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2201,7 +2113,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteDestinationFromFile();
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2211,7 +2123,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2222,7 +2134,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2231,7 +2143,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteFlightFromFile();
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2240,7 +2152,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     addHotelToFile(hotel);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2251,7 +2163,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2260,7 +2172,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteHotelFromFile();
-                    printf("Press enter to continue:");
+                    printf("\nPress enter to continue:");
                     getchar();
                 case 10:{
                     printf("\n\n");
@@ -2268,7 +2180,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     addPackagesFromFile();
                     printf("--- Package added successfully ---\n");
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2279,7 +2191,7 @@ int main() {
                     package packages[MAX_PACKAGES];
                     int numPackages = 0;
                     viewAllPackages(packages, numPackages);
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2288,16 +2200,24 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deletePackageFromFile();
-                    printf("Press enter to continue.");
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
                 case 13:
                     viewFeedbacks();
                     break;
-                /*case 14:
-                    viewBookings();
-                    break;*/
+                case 14:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    booking bookings[MAX_PACKAGES];
+                    int numBookings = 0;
+                    viewBookings(bookings, numBookings);
+                    printf("\nPress enter to continue.");
+                    getchar();
+                    break;
+                    }
                 case 15:
                     printf("Logging out...\n");
                     break;
