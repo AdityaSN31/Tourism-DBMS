@@ -628,7 +628,8 @@ void addDestinationFromUser(Destination *destination) {
     placesToVisit[strcspn(placesToVisit, "\n")] = '\0'; // Remove trailing newline
 
     // Copy the combined places to visit into the destination
-    strncpy(destination->placesToVisit, placesToVisit, sizeof(destination->placesToVisit));
+    strncpy(destination->placesToVisit[0], placesToVisit, sizeof(destination->placesToVisit[0]));
+
 
     // Open the CSV file in append mode
     FILE *file = fopen("Destination.csv", "a");
