@@ -2062,7 +2062,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2131,7 +2131,7 @@ int main() {
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
     		         printf("--- Destination '%s' added successfully ---\n", destinations.name);
-                     printf("Press enter to continue:");
+                     printf("Press enter to continue.");
                      getchar();
                      break;
                     }
@@ -2142,7 +2142,7 @@ int main() {
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2151,7 +2151,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteDestinationFromFile();
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2161,7 +2161,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2172,7 +2172,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2181,7 +2181,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteFlightFromFile();
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2190,7 +2190,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     addHotelToFile(hotel);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2201,7 +2201,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2216,7 +2216,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     addPackagesFromFile();
                     printf("--- Package added successfully ---\n");
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2227,7 +2227,7 @@ int main() {
                     package packages[MAX_PACKAGES];
                     int numPackages = 0;
                     viewAllPackages(packages, numPackages);
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
@@ -2236,7 +2236,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deletePackageFromFile();
-                    printf("Press enter to continue:");
+                    printf("Press enter to continue.");
                     getchar();
                     break;
                     }
