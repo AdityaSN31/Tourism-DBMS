@@ -2029,14 +2029,14 @@ int main() {
             printf("4. View Flights\n");
             printf("5. Book Flight or Hotel\n");
             printf("6. Provide Feedback\n");
-            printf("7. View User Details\n");
-            printf("8. Logout\n");
+            printf("7. Logout\n");
             printf("Enter your choice: ");
             scanf("%d", &choice);
 
             switch (choice) {
                 
-                case 1:{printf("\n\n");
+                case 1:{
+                    printf("\n\n");
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     Destination destination[MAX_DESTINATIONS];
@@ -2055,29 +2055,43 @@ int main() {
                     getchar();
                     break;
                     }
-                /*
-                case 3:
-                    viewHotels();
+                case 3:{
+                    Hotel hotels[MAX_HOTELS];
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    int numHotels = 0;
+                    viewAllHotels(hotels, numHotels);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
-                case 4:
-                    viewFlights();
-                    break;*/
-                case 5:
+                    }
+                case 4:{
+                    Flight flights[MAX_FLIGHTS];
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    int numFlights = 0;
+                    viewAllFlights(flights, numFlights);
+                    break;
+                    }
+                case 5:{
                     printf("\n\n");
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     handleBooking(username);
                     getchar();
                     break;
-                /*
-                case 6:
+                    }
+                case 6:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     provideFeedback(username);
+                    getchar();
                     break;
+                    }
                 case 7:
-                    viewUserDetails(username);
-                    break;
-                */
-                case 8:
                     printf("Logging out...\n");
                     break;
                 default:
@@ -2141,11 +2155,16 @@ int main() {
                     getchar();
                     break;
                     }
-                /*
-                case 4:
+                case 4:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
-                    break; */
+                    printf("Press enter to continue:");
+                    getchar();
+                    break;
+                    }
                 case 5:{
                     Flight flights[MAX_FLIGHTS];
                     printf("\n\n");
@@ -2153,6 +2172,8 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 case 6:{
