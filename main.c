@@ -2172,8 +2172,9 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     deleteHotelFromFile();
-                    printf("\nPress enter to continue:");
+                    printf("\nPress enter to continue.");
                     getchar();
+                    }
                 case 10:{
                     printf("\n\n");
                     int m;
