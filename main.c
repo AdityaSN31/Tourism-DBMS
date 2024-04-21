@@ -2305,8 +2305,9 @@ int main() {
                     printf("Invalid choice.\n");
                     break;
             }
-        } while (choice != 16);
-    }
+        } 
+    }while (choice != 16);
 
     return 0;
+    }
 }
