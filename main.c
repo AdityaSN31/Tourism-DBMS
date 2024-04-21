@@ -1757,7 +1757,7 @@ void provideFeedback(const char *username) {
     getchar(); // Consume newline character
 
     // Write feedback to file in CSV format with comment within quotation marks
-    fprintf(file, "\"%s\",\"%s\",%d\n", feedback.username, feedback.text, feedback.rating);
+    fprintf(file, "%s,%s,%d\n", feedback.username, feedback.text, feedback.rating);
 
     // Close file
     fclose(file);
@@ -2005,6 +2005,7 @@ int main() {
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2015,6 +2016,7 @@ int main() {
                     package packages[MAX_PACKAGES];
                     int numPackages = 0;
                     viewAllPackages(packages, numPackages);
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2036,6 +2038,8 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
+                    printf("\nPress enter to continue.");
+                    getchar();
                     break;
                     }
                 case 5:{
@@ -2043,6 +2047,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     handleBooking(username);
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2051,6 +2056,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     provideFeedback(username);
+                    printf("\nPress enter to continue.");
                     getchar();
                     break;
                     }
@@ -2207,6 +2213,8 @@ int main() {
                     }
                 case 13:
                     viewFeedbacks();
+                    printf("\nPress enter to continue.");
+                    getchar();
                     break;
                 case 14:{
                     printf("\n\n");
