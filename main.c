@@ -2158,6 +2158,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     addHotelToFile(hotel);
+                    printf("---New Hotel added successfully.---");
                     printf("\nPress enter to continue.");
                     getchar();
                     break;
