@@ -1447,22 +1447,6 @@ void deleteHotel(Hotel hotels[], int *numHotels) {
     }
 }
 
-
-// Function to add double quotes if a field contains a comma
-void addDoubleQuotes(char *input) {
-    if (strchr(input, ',') != NULL) {
-        size_t length = strlen(input);
-        // Shift the string to the right to make space for quotes
-        for (int i = length; i >= 0; i--) {
-            input[i + 1] = input[i];
-        }
-        // Add double quotes at the start and end
-        input[0] = '\"';
-        input[length + 1] = '\"';
-        input[length + 2] = '\0';  // Ensure null-termination
-    }
-}
-
 // Function to add a new hotel (for admin)
 void addHotelToFile(Hotel *hotel) {
     // Read hotel name and apply double quotes if needed
