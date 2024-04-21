@@ -5,9 +5,18 @@ Travel Buddy is a tourism database management system developed in C. It manages 
 
 ## Installation
 To install Travel Buddy, follow these steps:
-1. Clone the repository.
-2. Compile the code.
-3. Run the program.
+1. **Clone the Repository**: Clone the project repository to your local machine.
+   ```bash
+   git clone https://github.com/AdityaSN31/Tourism-DBMS.git
+2. **Compile the Code:** Navigate to the project directory and compile the source code using a C compiler.
+   ```bash
+   cd travel-buddy
+   gcc -o travel_buddy main.c
+3.Run the Program: After compiling, execute the compiled binary to run the Travel Buddy program.
+   ```bash
+   ./travel_buddy
+   ```
+4. Run the program.
 
 ## Usage
 Travel Buddy is a command-line interface (CLI) application. The system allows both regular users and administrators to interact with the tourism database management system. Depending on the user role, the available functionalities differ.
