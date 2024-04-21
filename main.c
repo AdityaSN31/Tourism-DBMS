@@ -1866,7 +1866,9 @@ int main() {
                     break;
                 */
                 case 10:
+                    printf("\n\n");
                     addPackageFromFile();
+                    printf("Package added successfully.\n");
                     break;
                 /*
                 case 11:
