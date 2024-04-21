@@ -2211,11 +2211,15 @@ int main() {
                     getchar();
                     break;
                     }
-                case 13:
+                case 13:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     viewFeedbacks();
                     printf("\nPress enter to continue.");
                     getchar();
                     break;
+                    }
                 case 14:{
                     printf("\n\n");
                     int m;
