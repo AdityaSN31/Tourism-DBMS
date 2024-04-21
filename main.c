@@ -1882,7 +1882,7 @@ int main() {
                 case 4:
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
-                    break;
+                    break; */
                 case 5:
                     Flight flights[MAX_FLIGHTS];
                     int numFlights = 0;
