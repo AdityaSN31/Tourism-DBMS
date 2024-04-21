@@ -2036,16 +2036,23 @@ int main() {
 
             switch (choice) {
                 
-                case 1:{
+                case 1:{printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
+                    getchar();
                     break;
                     }
                 case 2:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     package packages[MAX_PACKAGES];
                     int numPackages = 0;
                     viewAllPackages(packages, numPackages);
+                    getchar();
                     break;
                     }
                 /*
@@ -2056,7 +2063,11 @@ int main() {
                     viewFlights();
                     break;*/
                 case 5:
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     handleBooking(username);
+                    getchar();
                     break;
                 /*
                 case 6:
@@ -2105,12 +2116,15 @@ int main() {
                      while ((m = getchar()) != '\n' && m != EOF);
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
-    		         printf("--- Destination '%s' added successfully ---\n", destinations.name;
+    		         printf("--- Destination '%s' added successfully ---\n", destinations.name);
                      printf("Press enter to continue:");
                      getchar();
                      break;
                     }
                 case 2:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
@@ -2200,7 +2214,7 @@ int main() {
                     printf("\n\n");
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
-                    deletePackagesFromFile();
+                    deletePackageFromFile();
                     printf("Press enter to continue:");
                     getchar();
                     break;
