@@ -1257,32 +1257,76 @@ void addFlightToFile(Flight *flight) {
 }
 
 // Function to delete a flight from a CSV file
-void deleteFlightFromFile(Flight *flight) {
-    printf("Flight %s %s deleted successfully.\n", flight->airline, flight->flightNumber);
+void deleteFlightFromFile() {
+    char flightNumber[MAX_NAME_LENGTH];
+    printf("Enter the flight number to delete: ");
+    fgets(flightNumber, sizeof(flightNumber), stdin);
+    flightNumber[strcspn(flightNumber, "\n")] = '\0'; // Remove newline character
 
     FILE *file = fopen("Flights.csv", "r");
-    FILE *tempFile = fopen("temp_flights.csv", "w");
-    if (file == NULL || tempFile == NULL) {
-        error("Unable to open files for deletion");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    char line[MAX_NAME_LENGTH + MAX_NAME_LENGTH + MAX_LOCATION_LENGTH * 2 + MAX_DATE_LENGTH * 2 + 20];
-    char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s,%s,%s,%s,%s,%s,%s,%s", flight->city, flight->airline, flight->flightNumber, flight->departure, flight->arrival, flight->departureTime, flight->arrivalTime, flight->cost);
+    Flight flights[MAX_FLIGHTS];
+    char line[MAX_LINE_LENGTH];
+    int numFlights = 0;
 
-    while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, nameToDelete) == NULL) {
-            fputs(line, tempFile);
+    // Read and parse CSV file
+    while (fgets(line, sizeof(line), file) != NULL) {
+        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", 
+               flights[numFlights].city, flights[numFlights].airline, 
+               flights[numFlights].flightNumber, flights[numFlights].departure, 
+               flights[numFlights].arrival, flights[numFlights].departureTime, 
+               flights[numFlights].arrivalTime, flights[numFlights].cost);
+        numFlights++;
+    }
+    fclose(file);
+
+    int index = -1;
+    // Search for the flight by flight number
+    for (int i = 0; i < numFlights; i++) {
+        if (strcmp(flights[i].flightNumber, flightNumber) == 0) {
+            index = i;
+            break;
         }
     }
 
+    if (index == -1) {
+        printf("Flight not found.\n");
+        return;
+    }
+
+    // Shift elements to overwrite the deleted entry
+    for (int i = index; i < numFlights - 1; i++) {
+        strcpy(flights[i].city, flights[i + 1].city);
+        strcpy(flights[i].airline, flights[i + 1].airline);
+        strcpy(flights[i].flightNumber, flights[i + 1].flightNumber);
+        strcpy(flights[i].departure, flights[i + 1].departure);
+        strcpy(flights[i].arrival, flights[i + 1].arrival);
+        strcpy(flights[i].departureTime, flights[i + 1].departureTime);
+        strcpy(flights[i].arrivalTime, flights[i + 1].arrivalTime);
+        strcpy(flights[i].cost, flights[i + 1].cost);
+    }
+    numFlights--;
+
+    // Rewrite the file
+    file = fopen("Flights.csv", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    for (int i = 0; i < numFlights; i++) {
+        fprintf(file, "%s,%s,%s,%s,%s,%s,%s,%s\n", flights[i].city, flights[i].airline, 
+                flights[i].flightNumber, flights[i].departure, flights[i].arrival, 
+                flights[i].departureTime, flights[i].arrivalTime, flights[i].cost);
+    }
+
     fclose(file);
-    fclose(tempFile);
-
-    remove("Flights.csv");
-    rename("temp_flights.csv", "Flights.csv");
+    printf("Flight deleted successfully.\n");
 }
-
 
 // Function to save flights to a CSV file
 void saveFlightsToFile(Flight flights[], int numFlights) {
@@ -1925,7 +1969,7 @@ int main() {
                     }
                 
                 case 3:
-                    deleteDestinationFromFile();
+                    deleteFlightFromFile();
                     break;
                 /*
                 case 4:
@@ -1938,10 +1982,11 @@ int main() {
                     viewAllFlights(flights, numFlights);
                     break;
                     }
-                /*
-                case 6:
-                    deleteFlight();
-                    break;*/
+                case 6:{
+                    printf("\n\n");
+                    deletePackageFromFile();
+                    break;
+                    }
                 case 7:{
                     Hotel hotel[MAX_INPUT_LENGTH];
                     addHotelToFile(hotel);
