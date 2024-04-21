@@ -721,6 +721,8 @@ void addDestinationFromFile(Destination destinations[], int *numDestinations) {
 
 //delete destinations from the file destinations.csv
 void deleteDestinationFromFile() {
+    printf("Press enter to continue:");
+    getchar();
     char destinationName[MAX_NAME_LENGTH];
     printf("Enter the name of the destination to delete: ");
     fgets(destinationName, sizeof(destinationName), stdin);
@@ -948,6 +950,8 @@ void addPackagesFromFile() {
 // Function to delete a package from the CSV file
 void deletePackageFromFile() {
     char packageName[MAX_PACKAGE_NAME_LENGTH];
+    printf("Press enter to continue:");
+    getchar();
     printf("Enter the name of the package to delete: ");
     fgets(packageName, sizeof(packageName), stdin);
     packageName[strcspn(packageName, "\n")] = '\0'; // Remove newline character
@@ -1316,6 +1320,8 @@ void addFlightToFile(Flight *flight) {
 // Function to delete a flight from a CSV file
 void deleteFlightFromFile() {
     char flightNumber[MAX_NAME_LENGTH];
+    printf("Press enter to continue:");
+    getchar();
     printf("Enter the flight number to delete: ");
     fgets(flightNumber, sizeof(flightNumber), stdin);
     flightNumber[strcspn(flightNumber, "\n")] = '\0'; // Remove newline character
@@ -1592,6 +1598,8 @@ void saveHotelToFile(Hotel hotels[], int numHotels) {
 
 // Function to view hotels from a CSV file
 void viewAllHotels(Hotel hotels[], int numHotels) {
+    printf("Press enter to continue:");
+    getchar();
     FILE *file = fopen("Hotels.csv", "r");
     if (file == NULL) {
         printf("No hotels found in the database\n");
@@ -2015,11 +2023,19 @@ int main() {
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
-                case 3:
-                    deleteFlightFromFile();
+                case 3:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    deleteDestinationFromFile();
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
+                    }
                 /*
                 case 4:
                     Flight flight[MAX_INPUT_LENGTH];
@@ -2027,13 +2043,20 @@ int main() {
                     break; */
                 case 5:{
                     Flight flights[MAX_FLIGHTS];
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
                     break;
                     }
                 case 6:{
                     printf("\n\n");
-                    deletePackageFromFile();
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    deleteFlightFromFile();
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 case 7:{
@@ -2047,8 +2070,13 @@ int main() {
                     }
                 case 8:{
                     Hotel hotels[MAX_HOTELS];
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 /*
@@ -2079,7 +2107,11 @@ int main() {
                     }
                 case 12:{
                     printf("\n\n");
-                    deletePackageFromFile();
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    deletePackagesFromFile();
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 /*
