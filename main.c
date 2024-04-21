@@ -1990,7 +1990,7 @@ int main() {
                 */
                 case 10:{
                     printf("\n\n");
-                    addPackageFromFile();
+                    addPackagesFromFile();
                     printf("Package added successfully.\n");
                     break;
                     }
