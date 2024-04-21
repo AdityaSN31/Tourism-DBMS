@@ -1805,13 +1805,16 @@ int main() {
             scanf("%d", &choice);
 
             switch (choice) {
-                /*
-                case 1:
-                    viewAllDestinations();
-                    break;
                 
+                case 1:{
+                    Destination destination[MAX_DESTINATIONS];
+                    int numDestinations = 0;
+                    viewAllDestinations(destination, numDestinations);
+                    break;
+                    }
+                /*
                 case 2:
-                    viewPackages();
+                    viewAllPackages();
                     break;
                 case 3:
                     viewHotels();
@@ -1862,18 +1865,20 @@ int main() {
             scanf("%d", &choice);
 
             switch (choice) {
-                case 1:
+                case 1:{
                      Destination destinations;
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
     		         printf("Destination '%s' added successfully.\n", destinations.name);
                      break;
+                    }
                 
-                case 2:
+                case 2:{
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
                     break;
+                    }
                 
                 case 3:
                     deleteDestinationFromFile();
@@ -1883,34 +1888,38 @@ int main() {
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
                     break; */
-                case 5:
+                case 5:{
                     Flight flights[MAX_FLIGHTS];
                     int numFlights = 0;
                     viewAllFlights(flights, numFlights);
                     break;
+                    }
                 /*
                 case 6:
                     deleteFlight();
                     break;*/
-                case 7:
+                case 7:{
                     Hotel hotel[MAX_INPUT_LENGTH];
                     addHotelToFile(hotel);
                     break;
-                case 8:
+                    }
+                case 8:{
                     Hotel hotels[MAX_HOTELS];
                     int numHotels = 0;
                     viewAllHotels(hotels, numHotels);
                     break;
+                    }
                 /*
                 case 9:
                     deleteHotel();
                     break;
                 */
-                case 10:
+                case 10:{
                     printf("\n\n");
                     addPackageFromFile();
                     printf("Package added successfully.\n");
                     break;
+                    }
                 /*
                 case 11:
                     viewPackages();
