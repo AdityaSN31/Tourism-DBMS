@@ -1091,6 +1091,8 @@ void viewallpackages(Package packages[], int numPackages) {
 }
 
 void viewAllPackages(package packages[], int numPackages) {
+    printf("Press enter to continue:");
+    getchar();
     FILE *file = fopen("Packages.csv", "r");
     if (file == NULL) {
         printf("No packages found in the database.\n");
@@ -2004,10 +2006,11 @@ int main() {
                      while ((m = getchar()) != '\n' && m != EOF);
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
-    		         printf("--- Destination '%s' added successfully ---\n", destinations.name);
+    		         printf("--- Destination '%s' added successfully ---\n", destinations.name;
+                     printf("Press enter to continue:");
+                     getchar();
                      break;
                     }
-                
                 case 2:{
                     Destination destination[MAX_DESTINATIONS];
                     int numDestinations = 0;
@@ -2063,10 +2066,15 @@ int main() {
                     getchar();
                     break;
                     }
-                case 11:
+                case 11:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     package packages[MAX_PACKAGES];
                     int numPackages = 0;
                     viewAllPackages(packages, numPackages);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 case 12:{
