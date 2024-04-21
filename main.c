@@ -748,7 +748,7 @@ void deleteDestinationFromFile() {
     }
 
     fclose(file);
-    printf("Destination deleted successfully.\n");
+    printf("---Destination deleted successfully.---\n");
 }
 
 void removeQuotationMarks(char *str);
@@ -987,7 +987,7 @@ void deletePackageFromFile() {
     }
 
     fclose(file);
-    printf("Package deleted successfully.\n");
+    printf("---Package deleted successfully.---\n");
 }
 // Function to view packages from a CSV file
 void viewallpackages(Package packages[], int numPackages) {
@@ -1361,7 +1361,7 @@ void deleteFlightFromFile() {
     }
 
     fclose(file);
-    printf("Flight deleted successfully.\n");
+    printf("---Flight deleted successfully.---\n");
 }
 
 // Function to save flights to a CSV file
@@ -1592,7 +1592,7 @@ void deleteHotelFromFile() {
     }
 
     fclose(file);
-    printf("Hotel deleted successfully.\n");
+    printf("---Hotel deleted successfully.---\n");
 }
 
 
