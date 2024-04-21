@@ -2061,7 +2061,7 @@ int main() {
                     printf("Invalid choice.\n");
                     break;
             }
-        } while (choice != 7);
+        } while (choice != 8);
     } else if (role == ADMIN) {
         // Admin functionalities
         int choice;
@@ -2226,9 +2226,8 @@ int main() {
                     printf("Invalid choice.\n");
                     break;
             }
-        } 
-    }while (choice != 15);
+        } while (choice != 15);
+    }
 
     return 0;
-    }
 }
