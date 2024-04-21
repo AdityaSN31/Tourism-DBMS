@@ -605,6 +605,10 @@ void deleteDestination(Destination destinations[], int *numDestinations) {
 }
 // Function to add a new destination from user input and save to CSV file
 void addDestinationFromUser(Destination *destination) {
+
+    printf("Press enter to continue:");
+    getchar();
+    
     printf("Enter destination name: ");
     fgets(destination->name, sizeof(destination->name), stdin);
     destination->name[strcspn(destination->name, "\n")] = '\0'; // Remove trailing newline
@@ -873,6 +877,8 @@ void deletePackage(Package packages[], int *numPackages) {
 // Function to add a package from user input to a CSV file
 void addPackagesFromFile() {
     Package newPackage;
+    printf("Press enter to continue:");
+    getchar();
 
     printf("Enter package name: ");
     fgets(newPackage.name, sizeof(newPackage.name), stdin);
@@ -1450,6 +1456,9 @@ void deleteHotel(Hotel hotels[], int *numHotels) {
 
 // Function to add a new hotel (for admin)
 void addHotelToFile(Hotel *hotel) {
+    printf("Press enter to continue:");
+    getchar();
+    
     // Read hotel name and apply double quotes if needed
     printf("Enter hotel name: ");
     fgets(hotel->name, sizeof(hotel->name), stdin);
@@ -1940,9 +1949,11 @@ int main() {
             switch (choice) {
                 case 1:{
                      Destination destinations;
+                     int m;
+                     while ((m = getchar()) != '\n' && m != EOF);
                      printf("\n--- Add a Destination ---\n");
    		             addDestinationFromUser(&destinations);
-    		         printf("Destination '%s' added successfully.\n", destinations.name);
+    		         printf("--- Destination '%s' added successfully ---\n", destinations.name);
                      break;
                     }
                 
@@ -1974,7 +1985,11 @@ int main() {
                     }
                 case 7:{
                     Hotel hotel[MAX_INPUT_LENGTH];
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     addHotelToFile(hotel);
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 case 8:{
@@ -1990,8 +2005,12 @@ int main() {
                 */
                 case 10:{
                     printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
                     addPackagesFromFile();
-                    printf("Package added successfully.\n");
+                    printf("--- Package added successfully ---\n");
+                    printf("Press enter to continue:");
+                    getchar();
                     break;
                     }
                 /*
