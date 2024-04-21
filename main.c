@@ -110,7 +110,7 @@ typedef struct {
     int duration;
     char description[MAX_DESCRIPTION_LENGTH];
     char itinerary[MAX_ITINERARY_LENGTH];
-    float price;
+    char price[20];
     struct {
         char name[MAX_PACKAGE_NAME_LENGTH];
         char location[MAX_REGION_LENGTH];
@@ -830,62 +830,62 @@ void deletePackage(Package packages[], int *numPackages) {
 
 
 // Function to add a package from user input to a CSV file
-void addPackageFromFile(Package packages[], int *numPackages) {
-    if (*numPackages < MAX_PACKAGES) {
-        FILE *file = fopen("packages.csv", "a");
-        if (file == NULL) {
-            printf("Error opening file!\n");
-            return;
-        }
+void addPackagesFromFile() {
+    Package newPackage;
 
-        Package newPackage;
-        printf("Enter package name: ");
-        fgets(newPackage.name, sizeof(newPackage.name), stdin);
-        newPackage.name[strcspn(newPackage.name, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter region: ");
-        fgets(newPackage.region, sizeof(newPackage.region), stdin);
-        newPackage.region[strcspn(newPackage.region, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter duration (in days): ");
-        scanf("%d", &newPackage.duration);
-        while (getchar() != '\n'); // Clear input buffer
-        printf("Enter description: ");
-        fgets(newPackage.description, sizeof(newPackage.description), stdin);
-        newPackage.description[strcspn(newPackage.description, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter itinerary: ");
-        fgets(newPackage.itinerary, sizeof(newPackage.itinerary), stdin);
-        newPackage.itinerary[strcspn(newPackage.itinerary, "\n")] = '\0'; // Remove trailing newline
-        printf("Enter price: ");
-        scanf("%f", &newPackage.price);
-        while (getchar() != '\n'); // Clear input buffer
+    printf("Enter package name: ");
+    fgets(newPackage.name, sizeof(newPackage.name), stdin);
+    newPackage.name[strcspn(newPackage.name, "\n")] = '\0';
 
-        printf("Enter destinations (name and location):\n");
-        for (int i = 0; i < MAX_DESTINATIONS; i++) {
-            printf("Destination %d:\n", i + 1);
-            printf("Name: ");
-            fgets(newPackage.destinations[i].name, sizeof(newPackage.destinations[i].name), stdin);
-            newPackage.destinations[i].name[strcspn(newPackage.destinations[i].name, "\n")] = '\0'; // Remove trailing newline
-            printf("Location: ");
-            fgets(newPackage.destinations[i].location, sizeof(newPackage.destinations[i].location), stdin);
-            newPackage.destinations[i].location[strcspn(newPackage.destinations[i].location, "\n")] = '\0'; // Remove trailing newline
-        }
+    printf("Enter region: ");
+    fgets(newPackage.region, sizeof(newPackage.region), stdin);
+    newPackage.region[strcspn(newPackage.region, "\n")] = '\0';
 
-        fprintf(file, "%s,%s,%d,%s,%s,%.2f",
-                newPackage.name, newPackage.region, newPackage.duration,
-                newPackage.description, newPackage.itinerary, newPackage.price);
-        for (int i = 0; i < MAX_DESTINATIONS; i++) {
-            if (strlen(newPackage.destinations[i].name) > 0 && strlen(newPackage.destinations[i].location) > 0) {
-                fprintf(file, ",%s,%s", newPackage.destinations[i].name, newPackage.destinations[i].location);
-            }
-        }
-        fprintf(file, "\n");
+    printf("Enter duration (in nights): ");
+    scanf("%d", &newPackage.duration);
+    getchar(); // Consume newline character
 
-        fclose(file);
+    printf("Enter description: ");
+    fgets(newPackage.description, sizeof(newPackage.description), stdin);
+    newPackage.description[strcspn(newPackage.description, "\n")] = '\0';
 
-        (*numPackages)++;
-        printf("Package added successfully.\n");
-    } else {
-        printf("Maximum number of packages reached. Cannot add more packages.\n");
+    printf("Enter itinerary: ");
+    fgets(newPackage.itinerary, sizeof(newPackage.itinerary), stdin);
+    newPackage.itinerary[strcspn(newPackage.itinerary, "\n")] = '\0';
+
+    printf("Enter price range (approx.): ");
+    fgets(newPackage.price, sizeof(newPackage.price), stdin);
+    newPackage.price[strcspn(newPackage.price, "\n")] = '\0';
+
+    // Open the CSV file in append mode
+    FILE *file = fopen("Packages.csv", "a+");
+    if (file == NULL) {
+        perror("Unable to open file for writing");
+        exit(EXIT_FAILURE);
     }
+
+    // Check if the file is empty
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    if (fileSize > 0) {
+        // If file is not empty, add a newline character before appending
+        fprintf(file, "\n");
+    }
+
+    // Write the package data to the CSV file
+    if (fprintf(file, "%s,%s,%d,\"%s\",\"%s\",%s",
+                newPackage.name,
+                newPackage.region,
+                newPackage.duration,
+                newPackage.description,
+                newPackage.itinerary,
+                newPackage.price) < 0) {
+        perror("Error writing to CSV file");
+        fclose(file);
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(file);
 }
 
 // Function to delete a package from the CSV file
@@ -1864,9 +1864,11 @@ int main() {
                 case 9:
                     deleteHotel();
                     break;
+                */
                 case 10:
-                    addPackage();
+                    addPackageFromFile();
                     break;
+                /*
                 case 11:
                     viewPackages();
                     break;
