@@ -891,7 +891,7 @@ void deletePackage(Package packages[], int *numPackages) {
 
 // Function to add a package from user input to a CSV file
 void addPackagesFromFile() {
-    Package newPackage;
+    package newPackage;
     printf("Press enter to continue:");
     getchar();
 
@@ -919,6 +919,10 @@ void addPackagesFromFile() {
     fgets(newPackage.price, sizeof(newPackage.price), stdin);
     newPackage.price[strcspn(newPackage.price, "\n")] = '\0';
 
+    printf("Enter destinations (sperated by dashes): ");
+    fgets(newPackage.destinations, sizeof(newPackage.destinations), stdin);
+    newPackage.destinations[strcspn(newPackage.destinations, "\n")] = '\0';
+
     // Open the CSV file in append mode
     FILE *file = fopen("Packages.csv", "a+");
     if (file == NULL) {
@@ -941,7 +945,8 @@ void addPackagesFromFile() {
                 newPackage.duration,
                 newPackage.description,
                 newPackage.itinerary,
-                newPackage.price) < 0) {
+                newPackage.price,
+                newPackage.destinations) < 0) {
         perror("Error writing to CSV file");
         fclose(file);
         exit(EXIT_FAILURE);
@@ -1261,6 +1266,9 @@ void addDoubleQuotes(char *input) {
 
 
 void addFlightToFile(Flight *flight) {
+    printf("Press Enter to continue.");
+    getchar();
+    
     printf("Enter city: ");
     fgets(flight->city, sizeof(flight->city), stdin);
     flight->city[strcspn(flight->city, "\n")] = '\0';
@@ -1325,6 +1333,7 @@ void deleteFlightFromFile() {
     char flightNumber[MAX_NAME_LENGTH];
     printf("Press enter to continue:");
     getchar();
+    
     printf("Enter the flight number to delete: ");
     fgets(flightNumber, sizeof(flightNumber), stdin);
     flightNumber[strcspn(flightNumber, "\n")] = '\0'; // Remove newline character
@@ -1557,30 +1566,72 @@ void addHotelToFile(Hotel *hotel) {
 }
 
 // Function to delete a hotel
-void deleteHotelFromFile(Hotel *hotel) {
-    printf("Hotel %s deleted successfully.\n", hotel->name);
+void deleteHotelFromFile() {
+    
+    printf("Press enter to continue:");
+    getchar();
+    
+    char hotelName[MAX_NAME_LENGTH];
+    printf("Enter the name of the hotel to delete: ");
+    fgets(hotelName, sizeof(hotelName), stdin);
+    hotelName[strcspn(hotelName, "\n")] = '\0'; // Remove newline character
 
     FILE *file = fopen("Hotels.csv", "r");
-    FILE *tempFile = fopen("temp_hotels.csv", "w");
-    if (file == NULL || tempFile == NULL) {
-        error("Unable to open files for deletion");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    char line[MAX_NAME_LENGTH + MAX_LOCATION_LENGTH + MAX_DATE_LENGTH * 2 + 15];
-    char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s,%s,%s,%s", hotel->name, hotel->location, hotel->costPerNight, hotel->distance);
+    Hotel hotels[MAX_HOTELS];
+    char line[MAX_LINE_LENGTH];
+    int numHotels = 0;
 
-    while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, nameToDelete) == NULL) {
-            fputs(line, tempFile);
+    // Read and parse CSV file
+    while (fgets(line, sizeof(line), file) != NULL) {
+        sscanf(line, "%[^,],%[^,],%[^,],%[^\n]", hotels[numHotels].location,
+               hotels[numHotels].name, hotels[numHotels].costPerNight,
+               hotels[numHotels].distance);
+        numHotels++;
+    }
+    fclose(file);
+
+    int index = -1;
+    // Search for the hotel by name
+    for (int i = 0; i < numHotels; i++) {
+        if (strcmp(hotels[i].name, hotelName) == 0) {
+            index = i;
+            break;
         }
     }
 
-    fclose(file);
-    fclose(tempFile);
+    if (index == -1) {
+        printf("Hotel not found.\n");
+        return;
+    }
 
-    remove("Hotels.csv");
-    rename("temp_hotels.csv", "Hotels.csv");
+    // Shift elements to overwrite the deleted entry
+    for (int i = index; i < numHotels - 1; i++) {
+        strcpy(hotels[i].location, hotels[i + 1].location);
+        strcpy(hotels[i].name, hotels[i + 1].name);
+        strcpy(hotels[i].costPerNight, hotels[i + 1].costPerNight);
+        strcpy(hotels[i].distance, hotels[i + 1].distance);
+    }
+    numHotels--;
+
+    // Rewrite the file
+    file = fopen("Hotels.csv", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    for (int i = 0; i < numHotels; i++) {
+        fprintf(file, "%s,%s,%s,%s\n", hotels[i].location, hotels[i].name,
+                hotels[i].costPerNight, hotels[i].distance);
+    }
+
+    fclose(file);
+    printf("Hotel deleted successfully.\n");
 }
 
 
@@ -2116,10 +2167,9 @@ int main() {
             printf("10. Add a Package\n");
             printf("11. View All Packages\n");
             printf("12. Delete a Package\n");
-            printf("13. View and Modify Login Credentials\n");
-            printf("14. View Feedbacks\n");
-            printf("15. View Bookings\n");
-            printf("16. Logout\n");
+            printf("13. View Feedbacks\n");
+            printf("14. View Bookings\n");
+            printf("15. Logout\n");
             printf("Enter your choice: ");
             scanf("%d", &choice);
 
@@ -2205,11 +2255,13 @@ int main() {
                     getchar();
                     break;
                     }
-                /*
-                case 9:
-                    deleteHotel();
-                    break;
-                */
+                case 9:{
+                    printf("\n\n");
+                    int m;
+                    while ((m = getchar()) != '\n' && m != EOF);
+                    deleteHotelFromFile();
+                    printf("Press enter to continue:");
+                    getchar();
                 case 10:{
                     printf("\n\n");
                     int m;
@@ -2240,18 +2292,13 @@ int main() {
                     getchar();
                     break;
                     }
-                /*
                 case 13:
-                    viewAndModifyCredentials();
-                    break;
-                */
-                case 14:
                     viewFeedbacks();
                     break;
-                /*case 15:
+                /*case 14:
                     viewBookings();
                     break;*/
-                case 16:
+                case 15:
                     printf("Logging out...\n");
                     break;
                 default:
