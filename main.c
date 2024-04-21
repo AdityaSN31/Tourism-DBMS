@@ -44,6 +44,7 @@
 #define MAX_FLIGHT_NUMBER_LENGTH 20
 #define MAX_TIME_LENGTH 10
 #define MAX_COST_LENGTH 20
+#define MAX_DETAIL_LENGTH 50
 
 
 
@@ -158,6 +159,8 @@ typedef struct {
     void *bookingObject; // Pointer to the booked object
     int numPeople;
     char bookingDate[MAX_DATE_LENGTH];
+    char userName[MAX_NAME_LENGTH]; // Field to store the username
+    char bookingDetail[MAX_DETAIL_LENGTH]; // Additional details, e.g., flight number or hotel name
 } Booking;
 
 // Enum to represent feedback types
@@ -1884,6 +1887,93 @@ void viewFeedbacks() {
 }
 
 
+// Function to create a new booking entry
+void createBooking(Booking *booking, BookingType type, void *object, int numPeople, const char *bookingDate, const char *userName, const char *bookingDetail) {
+    booking->type = type;
+    booking->bookingObject = object; // This could be flight, hotel, or package
+    booking->numPeople = numPeople;
+    strncpy(booking->bookingDate, bookingDate, MAX_DATE_LENGTH - 1);
+    booking->bookingDate[MAX_DATE_LENGTH - 1] = '\0'; // Ensure null-termination
+    strncpy(booking->userName, userName, MAX_NAME_LENGTH - 1);
+    booking->userName[MAX_NAME_LENGTH - 1] = '\0'; // Ensure null-termination
+    strncpy(booking->bookingDetail, bookingDetail, MAX_DETAIL_LENGTH - 1);
+    booking->bookingDetail[MAX_DETAIL_LENGTH - 1] = '\0'; // Ensure null-termination
+}
+
+// Function to save the booking to a CSV file with double quotes to handle spaces
+void saveBookingToCSV(const char *fileName, Booking *booking) {
+    FILE *file = fopen(fileName, "a"); // Open the file in append mode
+    if (file == NULL) {
+        printf("Error opening the CSV file.\n");
+        return;
+    }
+
+    fprintf(file, "\"%d\",\"%s\",\"%s\",\"%s\"\n",
+            booking->numPeople,
+            booking->bookingDate,
+            booking->userName,
+            booking->bookingDetail);
+
+    fclose(file); // Close the file
+}
+
+BookingType getBookingType() {
+    int choice;
+    printf("Enter booking type (1 = Flight, 2 = Hotel, 3 = Package): ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            return FLIGHT_BOOKING;
+        case 2:
+            return HOTEL_BOOKING;
+        case 3:
+            return PACKAGE_BOOKING;
+        default:
+            printf("Invalid choice. Defaulting to Flight booking.\n");
+            return FLIGHT_BOOKING;
+    }
+}
+
+void handleBooking(const char *userName) {
+    Booking booking;
+    int numPeople;
+    char bookingDate[MAX_DATE_LENGTH];
+    char bookingDetail[MAX_DETAIL_LENGTH]; // Additional detail like flight number or hotel name
+
+    printf("Enter the number of people: ");
+    scanf("%d", &numPeople);
+
+    printf("Enter the booking date (YYYY-MM-DD): ");
+    scanf("%10s", bookingDate);
+
+    BookingType bookingType = getBookingType(); // Get booking type from user input
+
+    // Collect additional booking detail based on booking type
+    if (bookingType == FLIGHT_BOOKING) {
+        printf("Enter the flight number: "); // Ensure input is captured
+        scanf(" %[^\n]", bookingDetail); // Capture flight number with spaces
+    } else if (bookingType == HOTEL_BOOKING) {
+        printf("Enter the hotel name: "); // For hotel booking
+        scanf(" %[^\n]", bookingDetail); // Capture hotel name with spaces
+    } else if (bookingType == PACKAGE_BOOKING) {
+        printf("Enter the package name: "); // For package booking
+        scanf(" %[^\n]", bookingDetail); // Capture package name with spaces
+    }
+
+    // Create and save the booking
+    booking.type = bookingType;
+    booking.numPeople = numPeople;
+    strncpy(booking.bookingDate, bookingDate, MAX_DATE_LENGTH);
+    strncpy(booking.userName, userName, MAX_NAME_LENGTH);
+    strncpy(booking.bookingDetail, bookingDetail, MAX_DETAIL_LENGTH);
+
+    saveBookingToCSV("Booking.csv", &booking);
+
+    printf("Booking created and saved to CSV.\n");
+}
+
+
 int main() {
     // Initialize variables
     char username[MAX_NAME_LENGTH];
@@ -1964,10 +2054,11 @@ int main() {
                     break;
                 case 4:
                     viewFlights();
-                    break;
+                    break;*/
                 case 5:
-                    bookFlightOrHotel(username);
+                    handleBooking(username);
                     break;
+                /*
                 case 6:
                     provideFeedback(username);
                     break;
