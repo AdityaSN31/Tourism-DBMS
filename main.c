@@ -110,12 +110,22 @@ typedef struct {
     int duration;
     char description[MAX_DESCRIPTION_LENGTH];
     char itinerary[MAX_ITINERARY_LENGTH];
-    char price[20];
+    char price[MAX_CPN_LENGTH];
     struct {
         char name[MAX_PACKAGE_NAME_LENGTH];
         char location[MAX_REGION_LENGTH];
     } destinations[MAX_DESTINATIONS];
 } Package;
+
+typedef struct {
+    char name[MAX_PACKAGE_NAME_LENGTH];
+    char region[MAX_REGION_LENGTH];
+    int duration;
+    char description[MAX_DESCRIPTION_LENGTH];
+    char itinerary[MAX_ITINERARY_LENGTH];
+    char price[MAX_CPN_LENGTH];
+    char destinations[MAX_DESTINATIONS];
+} package;
 
 typedef struct {
     char city[MAX_NAME_LENGTH];
@@ -1007,7 +1017,7 @@ void deletePackageFromFile() {
     printf("Package deleted successfully.\n");
 }
 // Function to view packages from a CSV file
-void viewAllPackages(Package packages[], int numPackages) {
+void viewallpackages(Package packages[], int numPackages) {
     FILE *file = fopen("packages.csv", "r");
     if (file == NULL) {
         printf("No packages found in the database.\n");
@@ -1076,6 +1086,44 @@ void viewAllPackages(Package packages[], int numPackages) {
             }
         }
     } else {
+        printf("No packages to display.\n");
+    }
+}
+
+void viewAllPackages(package packages[], int numPackages) {
+    FILE *file = fopen("Packages.csv", "r");
+    if (file == NULL) {
+        printf("No packages found in the database.\n");
+        return;
+    }
+
+    // Read and discard the first line (header) of the CSV file
+    char header[MAX_CSV_LINE_LENGTH];
+    if (fgets(header, sizeof(header), file) == NULL) {
+        fclose(file);
+        printf("Failed to read the header from the file.\n");
+        return;
+    }
+
+    printf("List of Packages:\n");
+    printf(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("| %-40s | %-12s | %-8s | %-141s | %-90s | %-20s | %-40s|\n", "Name", "Region", "Duration", "Description", "Itinerary", "Price Range","Destinations");
+    printf(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    while (fscanf(file, "%[^,],%[^,],%d,%[^,],%[^,],%[^,],%[^\n]\n",
+                  packages[numPackages].name, packages[numPackages].region, &packages[numPackages].duration,
+                  packages[numPackages].description, packages[numPackages].itinerary, packages[numPackages].price,
+                  packages[numPackages].destinations) == 7) {
+        printf("| %-40s | %-12s | %-8d | %-141s | %-90s | %-20s | %-40s|\n",
+               packages[numPackages].name, packages[numPackages].region, packages[numPackages].duration,
+               packages[numPackages].description, packages[numPackages].itinerary, packages[numPackages].price, packages[numPackages].destinations);
+        numPackages++;
+    }
+    printf(" ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+    fclose(file);
+
+    if (numPackages == 0) {
         printf("No packages to display.\n");
     }
 }
@@ -1894,10 +1942,13 @@ int main() {
                     viewAllDestinations(destination, numDestinations);
                     break;
                     }
-                /*
-                case 2:
-                    viewAllPackages();
+                case 2:{
+                    package packages[MAX_PACKAGES];
+                    int numPackages = 0;
+                    viewAllPackages(packages, numPackages);
                     break;
+                    }
+                /*
                 case 3:
                     viewHotels();
                     break;
@@ -1928,17 +1979,17 @@ int main() {
         do {
             printf("\nAdmin Menu:\n");
             printf("1. Add Destination\n");
-            printf("2. View Destinations\n");
-            printf("3. Delete Destination\n");
-            printf("4. Add Flight\n");
-            printf("5. View Flights\n");
-            printf("6. Delete Flight\n");
-            printf("7. Add Hotel\n");
-            printf("8. View Hotels\n");
-            printf("9. Delete Hotel\n");
-            printf("10. Add Package\n");
-            printf("11. View Packages\n");
-            printf("12. Delete Package\n");
+            printf("2. View All Destinations\n");
+            printf("3. Delete a Destination\n");
+            printf("4. Add a Flight\n");
+            printf("5. View All Flights\n");
+            printf("6. Delete a Flight\n");
+            printf("7. Add a Hotel\n");
+            printf("8. View All Hotels\n");
+            printf("9. Delete a Hotel\n");
+            printf("10. Add a Package\n");
+            printf("11. View All Packages\n");
+            printf("12. Delete a Package\n");
             printf("13. View and Modify Login Credentials\n");
             printf("14. View Feedbacks\n");
             printf("15. View Bookings\n");
@@ -1963,7 +2014,6 @@ int main() {
                     viewAllDestinations(destination, numDestinations);
                     break;
                     }
-                
                 case 3:
                     deleteFlightFromFile();
                     break;
@@ -2013,11 +2063,12 @@ int main() {
                     getchar();
                     break;
                     }
-                /*
                 case 11:
-                    viewPackages();
+                    package packages[MAX_PACKAGES];
+                    int numPackages = 0;
+                    viewAllPackages(packages, numPackages);
                     break;
-                */
+                    }
                 case 12:{
                     printf("\n\n");
                     deletePackageFromFile();
