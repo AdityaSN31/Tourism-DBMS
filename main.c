@@ -705,29 +705,69 @@ void addDestinationFromFile(Destination destinations[], int *numDestinations) {
 }
 
 //delete destinations from the file destinations.csv
-void deleteDestinationFromFile(const char *destinationName) {
-    FILE *file = fopen("destinations.csv", "r");
-    FILE *tempFile = fopen("temp_destinations.csv", "w");
-    if (file == NULL || tempFile == NULL) {
-        error("Unable to open files for deletion");
+void deleteDestinationFromFile() {
+    char destinationName[MAX_NAME_LENGTH];
+    printf("Enter the name of the destination to delete: ");
+    fgets(destinationName, sizeof(destinationName), stdin);
+    destinationName[strcspn(destinationName, "\n")] = '\0'; // Remove newline character
+
+    FILE *file = fopen("Destination.csv", "r");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    char line[MAX_NAME_LENGTH + MAX_DESCRIPTION_LENGTH + MAX_LOCATION_LENGTH +
-              MAX_DESCRIPTION_LENGTH * MAX_PLACES_TO_VISIT + MAX_DESCRIPTION_LENGTH + 10];
-    char nameToDelete[MAX_NAME_LENGTH];
-    sprintf(nameToDelete, "%s,", destinationName);
+    Destination destinations[MAX_DESTINATIONS];
+    char line[MAX_LINE_LENGTH];
+    int numDestinations = 0;
 
-    while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, nameToDelete) == NULL) {
-            fputs(line, tempFile);
+    // Read and parse CSV file
+    while (fgets(line, sizeof(line), file) != NULL) {
+        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^\n]", destinations[numDestinations].name,
+               destinations[numDestinations].description, destinations[numDestinations].location,
+               destinations[numDestinations].placesToVisit[0], destinations[numDestinations].bestTimeToVisit);
+        numDestinations++;
+    }
+    fclose(file);
+
+    int index = -1;
+    // Search for the destination by name
+    for (int i = 0; i < numDestinations; i++) {
+        if (strcmp(destinations[i].name, destinationName) == 0) {
+            index = i;
+            break;
         }
     }
 
-    fclose(file);
-    fclose(tempFile);
+    if (index == -1) {
+        printf("Destination not found.\n");
+        return;
+    }
 
-    remove("destinations.csv");
-    rename("temp_destinations.csv", "destinations.csv");
+    // Shift elements to overwrite the deleted entry
+    for (int i = index; i < numDestinations - 1; i++) {
+        strcpy(destinations[i].name, destinations[i + 1].name);
+        strcpy(destinations[i].description, destinations[i + 1].description);
+        strcpy(destinations[i].location, destinations[i + 1].location);
+        strcpy(destinations[i].placesToVisit[0], destinations[i + 1].placesToVisit[0]);
+        strcpy(destinations[i].bestTimeToVisit, destinations[i + 1].bestTimeToVisit);
+    }
+    numDestinations--;
+
+    // Rewrite the file
+    file = fopen("Destination.csv", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    for (int i = 0; i < numDestinations; i++) {
+        fprintf(file, "%s,%s,%s,%s,%s\n", destinations[i].name, destinations[i].description,
+                destinations[i].location, destinations[i].placesToVisit[0], destinations[i].bestTimeToVisit);
+    }
+
+    fclose(file);
+    printf("Destination deleted successfully.\n");
 }
 
 void removeQuotationMarks(char *str);
@@ -1834,10 +1874,11 @@ int main() {
                     int numDestinations = 0;
                     viewAllDestinations(destination, numDestinations);
                     break;
-                /*
+                
                 case 3:
-                    deleteDestination();
-                    break;*/
+                    deleteDestinationFromFile();
+                    break;
+                /*
                 case 4:
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
@@ -1898,4 +1939,3 @@ int main() {
 
     return 0;
 }
-
