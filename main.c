@@ -2129,6 +2129,7 @@ int main() {
                     while ((m = getchar()) != '\n' && m != EOF);
                     Flight flight[MAX_INPUT_LENGTH];
                     addFlightToFile(flight);
+                    printf("\n---New Flight added successfully.---");
                     printf("\nPress enter to continue.");
                     getchar();
                     break;
@@ -2158,7 +2159,7 @@ int main() {
                     int m;
                     while ((m = getchar()) != '\n' && m != EOF);
                     addHotelToFile(hotel);
-                    printf("---New Hotel added successfully.---");
+                    printf("\n---New Hotel added successfully.---");
                     printf("\nPress enter to continue.");
                     getchar();
                     break;
