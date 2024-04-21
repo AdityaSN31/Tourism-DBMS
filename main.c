@@ -1028,7 +1028,7 @@ void viewAllPackages(Package packages[], int numPackages) {
         strcpy(packages[numPackages].itinerary, token);
 
         token = strtok(NULL, ",");
-        packages[numPackages].price = atof(token);
+        strcpy(packages[numPackages].price, token);
 
         for (i = 0; i < MAX_DESTINATIONS; i++) {
             token = strtok(NULL, ",");
