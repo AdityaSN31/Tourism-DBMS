@@ -35,7 +35,7 @@
 #define MAX_DISTANCECC_LENGTH 50
 #define MAX_CPN_LENGTH 50
 #define MAX_TEXT_LENGTH 50
-#define MAX_INPUT_LENGTH 100
+#define MAX_INPUT_LENGTH 1000
 #define MAX_BEST_TIME_TO_VISIT 50
 #define MAX_FIELDS 5 // We have 5 fields in our CSV: Name, Description, Location, Places to Visit, Best Time to Visit
 #define MAX_NAME_LENGTH 100
